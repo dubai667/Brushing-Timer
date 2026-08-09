@@ -415,27 +415,110 @@ svg * { vector-effect: non-scaling-stroke; }
 .stats-panel {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 12px;
 }
 
-.stats-panel div {
-  min-height: 104px;
-  padding: 14px;
-  border-radius: 18px;
-  background: #eef8dc;
+.stat-card {
+  position: relative;
+  min-height: 126px;
+  overflow: hidden;
+  padding: 16px 14px;
+  border: 1px solid rgba(72, 166, 70, 0.1);
+  border-radius: 22px;
+  isolation: isolate;
 }
 
-.stats-panel span {
+.stat-card::before,
+.stat-card::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.stat-card::before {
+  right: -28px;
+  bottom: -32px;
+  width: 112px;
+  height: 112px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.stat-card::after {
+  right: 18px;
+  top: 14px;
+  width: 9px;
+  height: 9px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.stat-card-streak {
+  background:
+    radial-gradient(circle at 86% 82%, rgba(98, 191, 124, 0.44) 0 24%, transparent 25%),
+    linear-gradient(135deg, #dff9dd 0%, #bff0ec 100%);
+}
+
+.stat-card-total {
+  background:
+    radial-gradient(circle at 88% 80%, rgba(102, 189, 88, 0.36) 0 25%, transparent 26%),
+    linear-gradient(135deg, #fff0d3 0%, #dff7ca 100%);
+}
+
+.stat-content {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 4px;
+}
+
+.stats-panel span:not(.stat-icon) {
   display: block;
-  color: var(--muted);
-  font-size: 12px;
+  color: rgba(23, 53, 31, 0.78);
+  font-size: 13px;
   font-weight: 900;
 }
 
 .stats-panel strong {
   display: block;
-  margin-top: 14px;
-  font-size: 26px;
+  color: var(--ink);
+  font-size: 30px;
+  line-height: 1.05;
+  font-weight: 950;
+}
+
+.stats-panel small {
+  color: rgba(23, 53, 31, 0.5);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.stat-icon {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  z-index: 1;
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 18px;
+  color: rgba(23, 53, 31, 0.82);
+  transform: rotate(-6deg);
+}
+
+.stat-card-total .stat-icon {
+  color: rgba(40, 109, 49, 0.86);
+  transform: rotate(8deg);
+}
+
+.stat-icon svg {
+  width: 48px;
+  height: 48px;
+  fill: rgba(255, 255, 255, 0.35);
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .records-list {
@@ -753,7 +836,6 @@ input:focus, select:focus {
   gap: 12px;
 }
 
-.data-view .stats-panel div,
 .data-view .record-item,
 .mine-view .stats-panel div,
 .mine-view .record-item,
@@ -767,7 +849,6 @@ input:focus, select:focus {
   border: 1px solid rgba(72, 166, 70, 0.16);
 }
 
-.data-view .stats-panel div,
 .mine-view .stats-panel div {
   min-height: 82px;
 }

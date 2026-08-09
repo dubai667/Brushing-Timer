@@ -10,7 +10,7 @@
     <title>刷牙计时</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=45" />
+    <link rel="stylesheet" href="./styles.css?v=46" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -21,6 +21,8 @@
       <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></symbol>
       <symbol id="icon-up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
       <symbol id="icon-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="icon-trophy" viewBox="0 0 24 24"><path d="M8 5h8v4a4 4 0 0 1-8 0z"/><path d="M8 7H5a3 3 0 0 0 3 4M16 7h3a3 3 0 0 1-3 4M12 13v4M9 21h6M10 17h4"/></symbol>
+      <symbol id="icon-smile-tooth" viewBox="0 0 24 24"><path d="M8.8 3.8c-3-.5-5.3 1.7-5 5 .2 2.8 1.5 5.1 3.2 7.2 1 1.2 2.4.8 2.7-.8l.6-3.4c.2-1.1 1.6-1.1 1.8 0l.7 3.8c.3 1.5 2.2 1.7 3.1.4 1.7-2.4 3-4.7 3.2-7.4.2-3.4-2.3-5.6-5.5-4.6-1.5.5-3 .5-4.8-.2z"/><path d="M8.2 9.8h.1M14.8 9.8h.1M9.3 12.7c1.4 1.3 3.8 1.3 5.2 0"/></symbol>
       <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M19.8 4.2l-2.1 2.1M6.3 17.7l-2.1 2.1"/></symbol>
       <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M6 14a6 6 0 0 0 9 5.2A8 8 0 0 1 13 4a6 6 0 0 0-7 10z"/></symbol>
     </svg>
@@ -84,13 +86,21 @@
 
       <section class="view data-view" data-view="data">
         <section class="panel stats-panel">
-          <div>
-            <span>连续完成</span>
-            <strong id="streakCount">0 天</strong>
+          <div class="stat-card stat-card-streak">
+            <div class="stat-content">
+              <span>连续完成</span>
+              <strong id="streakCount">0 天</strong>
+              <small>保持节奏</small>
+            </div>
+            <span class="stat-icon"><svg><use href="#icon-trophy"></use></svg></span>
           </div>
-          <div>
-            <span>总完成</span>
-            <strong id="totalCount">0 次</strong>
+          <div class="stat-card stat-card-total">
+            <div class="stat-content">
+              <span>总完成</span>
+              <strong id="totalCount">0 次</strong>
+              <small>累计打卡</small>
+            </div>
+            <span class="stat-icon"><svg><use href="#icon-smile-tooth"></use></svg></span>
           </div>
         </section>
 
@@ -154,7 +164,7 @@
     </nav>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./script.js?v=45"></script>
+    <script src="./script.js?v=46"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
