@@ -10,7 +10,7 @@
     <title>刷牙计时</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=32" />
+    <link rel="stylesheet" href="./styles.css?v=33" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -137,6 +137,19 @@
     </nav>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./script.js?v=32"></script>
+    <script src="./script.js?v=33"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).catch(() => {});
+        });
+
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (sessionStorage.getItem("sw-refreshing")) return;
+          sessionStorage.setItem("sw-refreshing", "1");
+          window.location.reload();
+        });
+      }
+    </script>
   </body>
 </html>

@@ -1,7 +1,7 @@
 {
   "name": "刷牙计时",
   "short_name": "刷牙",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#f7f4df",
   "theme_color": "#bfe8f4",
