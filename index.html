@@ -10,7 +10,7 @@
     <title>刷牙计时</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=51" />
+    <link rel="stylesheet" href="./styles.css?v=88" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -32,7 +32,6 @@
         <header class="hero">
           <div class="hero-top">
             <span id="todayText"></span>
-            <span id="sessionLabel">早晚各一次</span>
           </div>
 
           <section class="brush-stage" aria-live="polite" hidden>
@@ -69,7 +68,7 @@
             </svg>
             <div>
               <strong id="timeLeft">00:00</strong>
-              <span id="stepTimeLeft">本步 20s</span>
+              <span id="stepTimeLeft">晚间打卡</span>
             </div>
           </div>
           <div class="timer-copy">
@@ -102,8 +101,7 @@
 
         <section class="panel">
           <div class="panel-head">
-            <h2>历史记录</h2>
-            <button id="clearRecords" type="button">清空</button>
+            <h2 class="section-title"><span class="section-bar" aria-hidden="true"></span>历史记录</h2>
           </div>
           <div class="calendar" id="calendarView"></div>
           <div class="records-list" id="recordsList"></div>
@@ -112,37 +110,82 @@
 
       <section class="view mine-view" data-view="mine">
         <section class="panel">
-          <div class="panel-head">
-            <h2>刷牙设置</h2>
+          <div class="setting-group setting-row">
+            <h3>刷牙次数</h3>
+            <div class="radio-list radio-list-inline" id="brushCountOptions">
+              <label class="radio-row">
+                <input type="radio" name="brushCount" value="2" />
+                <span>
+                  <strong>2 次</strong>
+                </span>
+              </label>
+              <label class="radio-row">
+                <input type="radio" name="brushCount" value="3" />
+                <span>
+                  <strong>3 次</strong>
+                </span>
+              </label>
+            </div>
           </div>
-          <div class="setting-group">
+
+          <div class="setting-group setting-row">
             <h3>刷牙时间</h3>
-            <div class="radio-list" id="durationOptions">
+            <div class="radio-list radio-list-inline" id="durationOptions">
               <label class="radio-row">
                 <input type="radio" name="brushDuration" value="2" />
                 <span>
                   <strong>2 分钟</strong>
-                  <small>标准刷牙时长</small>
                 </span>
               </label>
               <label class="radio-row">
                 <input type="radio" name="brushDuration" value="3" />
                 <span>
                   <strong>3 分钟</strong>
-                  <small>更充分清洁</small>
                 </span>
               </label>
             </div>
           </div>
 
           <div class="setting-group">
-            <h3>提醒时间</h3>
-            <div class="radio-grid" id="reminderOptions">
-              <label class="radio-pill"><input type="radio" name="reminderPeriod" value="morning" /><span>早上</span></label>
-              <label class="radio-pill"><input type="radio" name="reminderPeriod" value="noon" /><span>中午</span></label>
-              <label class="radio-pill"><input type="radio" name="reminderPeriod" value="night" /><span>晚上</span></label>
+            <div class="setting-title-row">
+              <h3>
+                提醒时间
+                <button class="help-button" id="reminderHelpButton" type="button" aria-label="查看提醒时间说明">
+                  <svg class="help-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M9.8 9.4a2.4 2.4 0 0 1 4.6.9c0 1.8-2.4 2.1-2.4 4"></path>
+                    <path d="M12 17.5h.01"></path>
+                  </svg>
+                </button>
+              </h3>
+              <button class="notification-button" id="notificationButton" type="button">开启通知提醒</button>
             </div>
-            <p class="setting-note">12 点以前算早上，12 点到 17 点算中午，17 点以后算晚上。</p>
+            <div class="reminder-list" id="reminderOptions">
+              <label class="reminder-row" data-period="morning">
+                <span>早间</span>
+                <span class="time-select">
+                  <span class="time-value">08:00</span>
+                  <input type="time" name="reminderTime" data-period="morning" />
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-down"></use></svg>
+                </span>
+              </label>
+              <label class="reminder-row" data-period="noon">
+                <span>午间</span>
+                <span class="time-select">
+                  <span class="time-value">12:30</span>
+                  <input type="time" name="reminderTime" data-period="noon" />
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-down"></use></svg>
+                </span>
+              </label>
+              <label class="reminder-row" data-period="night">
+                <span>晚间</span>
+                <span class="time-select">
+                  <span class="time-value">21:30</span>
+                  <input type="time" name="reminderTime" data-period="night" />
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-down"></use></svg>
+                </span>
+              </label>
+            </div>
           </div>
 
           <div class="setting-group">
@@ -156,11 +199,11 @@
     <nav class="bottom-nav" aria-label="底部导航">
       <button class="active" data-tab="checkin" type="button"><span><svg><use href="#icon-home"></use></svg></span>打卡</button>
       <button data-tab="data" type="button"><span><svg><use href="#icon-record"></use></svg></span>数据</button>
-      <button data-tab="mine" type="button"><span><svg><use href="#icon-settings"></use></svg></span>我的</button>
+      <button data-tab="mine" type="button"><span><svg><use href="#icon-settings"></use></svg></span>设置</button>
     </nav>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./script.js?v=51"></script>
+    <script src="./script.js?v=88"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
