@@ -420,11 +420,11 @@ svg * { vector-effect: non-scaling-stroke; }
 
 .stat-card {
   position: relative;
-  min-height: 126px;
+  min-height: 110px;
   overflow: hidden;
-  padding: 16px 14px;
-  border: 1px solid rgba(72, 166, 70, 0.1);
-  border-radius: 22px;
+  padding: 14px 14px;
+  border: 0;
+  border-radius: 12px;
   isolation: isolate;
 }
 
@@ -453,7 +453,7 @@ svg * { vector-effect: non-scaling-stroke; }
 }
 
 .stat-card-streak {
-  background: url("./assets/checkin-banner.png") center / cover no-repeat;
+  background: url("./assets/checkin-banner-small.jpg") center / cover no-repeat;
 }
 
 .stat-card-streak::before,
@@ -469,6 +469,7 @@ svg * { vector-effect: non-scaling-stroke; }
 .stat-card-streak .stat-content span {
   color: rgba(23, 53, 31, 0.8);
   font-size: 13px;
+  font-weight: 500;
 }
 
 .stat-card-streak .stat-content strong {
@@ -477,9 +478,12 @@ svg * { vector-effect: non-scaling-stroke; }
 }
 
 .stat-card-total {
-  background:
-    radial-gradient(circle at 88% 80%, rgba(102, 189, 88, 0.36) 0 25%, transparent 26%),
-    linear-gradient(135deg, #fff0d3 0%, #dff7ca 100%);
+  background: url("./assets/total-banner-small.jpg") center / cover no-repeat;
+}
+
+.stat-card-total::before,
+.stat-card-total::after {
+  display: none;
 }
 
 .stat-content {
@@ -493,15 +497,23 @@ svg * { vector-effect: non-scaling-stroke; }
   display: block;
   color: rgba(23, 53, 31, 0.78);
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 500;
 }
 
 .stats-panel strong {
-  display: block;
+  display: inline-flex;
+  align-items: baseline;
   color: var(--ink);
   font-size: 30px;
   line-height: 1.05;
   font-weight: 950;
+}
+
+.stats-panel .stat-unit {
+  display: inline;
+  margin-left: 3px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .stats-panel small {

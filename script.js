@@ -241,8 +241,8 @@ function getStreak() {
 }
 
 function renderRecords() {
-  $("#streakCount").textContent = `${getStreak()} 天`;
-  $("#totalCount").textContent = `${(state.records || []).length} 次`;
+  $("#streakCount").innerHTML = `${getStreak()}<span class="stat-unit">天</span>`;
+  $("#totalCount").innerHTML = `${(state.records || []).length}<span class="stat-unit">次</span>`;
   renderCalendar();
   $("#recordsList").innerHTML = state.records?.length
     ? state.records
