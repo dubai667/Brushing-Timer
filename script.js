@@ -106,7 +106,7 @@ function renderTimer() {
   const progress = totalDuration() ? (info.elapsed / totalDuration()) * 360 : 0;
   const idle = !timer.running && !timer.done && info.elapsed <= 0.1;
 
-  $("#timeLeft").textContent = formatSeconds(info.remaining);
+  $("#timeLeft").textContent = formatSeconds(info.elapsed);
   $("#stepTimeLeft").textContent = idle ? `本步 ${step.duration}s` : `本步 ${Math.max(0, Math.ceil(info.stepRemaining))}s`;
   $("#stepIndex").textContent = `第 ${info.stepIndex + 1} / ${steps.length} 步`;
   $("#stepTitle").textContent = step.title;
