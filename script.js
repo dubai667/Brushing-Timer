@@ -1,18 +1,17 @@
 const STORAGE_KEY = "toothTimer:v1";
 
 const steps = [
-  { title: "上排外侧", hint: "牙刷轻轻打圈，照顾到牙龈边缘。", zone: "M83 113c15-12 38-13 58-4", brush: "translate(0 0)" },
-  { title: "上排内侧", hint: "牙刷稍微倾斜，慢慢刷到门牙内侧。", zone: "M102 104c18 17 47 17 65 0", brush: "translate(-18 24) rotate(-14deg)" },
-  { title: "上排咬合面", hint: "前后来回刷，不要漏掉臼齿。", zone: "M86 143c22-8 55-8 78 1", brush: "translate(-4 42) rotate(12deg)" },
-  { title: "下排外侧", hint: "从左到右移动，保持小幅度震动。", zone: "M87 168c24 10 62 10 85-2", brush: "translate(-12 72) rotate(-8deg)" },
-  { title: "下排内侧", hint: "竖起牙刷刷前牙内侧，动作轻一点。", zone: "M105 178c18 17 40 17 58 0", brush: "translate(-35 82) rotate(-18deg)" },
-  { title: "下排咬合面", hint: "最后刷咬合面，完成后漱口。", zone: "M92 190c23 12 56 12 80 0", brush: "translate(-5 96) rotate(10deg)" },
+  { title: "上排外侧", duration: 20, hint: "牙刷轻轻打圈，照顾到牙龈边缘。", zone: "M83 113c15-12 38-13 58-4", brush: "translate(0 0)" },
+  { title: "上排内侧", duration: 20, hint: "牙刷稍微倾斜，慢慢刷到门牙内侧。", zone: "M102 104c18 17 47 17 65 0", brush: "translate(-18 24) rotate(-14deg)" },
+  { title: "上排咬合面", duration: 15, hint: "前后来回刷，不要漏掉臼齿。", zone: "M86 143c22-8 55-8 78 1", brush: "translate(-4 42) rotate(12deg)" },
+  { title: "下排外侧", duration: 20, hint: "从左到右移动，保持小幅度震动。", zone: "M87 168c24 10 62 10 85-2", brush: "translate(-12 72) rotate(-8deg)" },
+  { title: "下排内侧", duration: 20, hint: "竖起牙刷刷前牙内侧，动作轻一点。", zone: "M105 178c18 17 40 17 58 0", brush: "translate(-35 82) rotate(-18deg)" },
+  { title: "下排咬合面", duration: 15, hint: "最后刷下排咬合面。", zone: "M92 190c23 12 56 12 80 0", brush: "translate(-5 96) rotate(10deg)" },
+  { title: "舌头表面", duration: 10, hint: "轻刷舌头表面，动作放轻一点。", zone: "M104 158c15 12 40 12 55 0", brush: "translate(-24 70) rotate(-4deg)" },
 ];
 
 const defaultState = {
-  stepDuration: 20,
   reminderTime: "21:30",
-  session: "morning",
   records: [],
 };
 
@@ -41,7 +40,7 @@ function saveState() {
 }
 
 function totalDuration() {
-  return steps.length * Number(state.stepDuration || 20);
+  return steps.reduce((sum, step) => sum + step.duration, 0);
 }
 
 function formatSeconds(value) {
@@ -55,17 +54,13 @@ function todayKey(date = new Date()) {
   return date.toISOString().slice(0, 10);
 }
 
-function getCurrentSessionLabel() {
-  return state.session === "night" ? "晚上刷牙" : "早上刷牙";
-}
-
 function renderTodayText() {
   $("#todayText").textContent = new Intl.DateTimeFormat("zh-CN", {
     month: "long",
     day: "numeric",
     weekday: "long",
   }).format(new Date());
-  $("#sessionLabel").textContent = getCurrentSessionLabel();
+  $("#sessionLabel").textContent = "刷牙打卡";
 }
 
 function getTimerElapsed() {
@@ -75,9 +70,19 @@ function getTimerElapsed() {
 
 function getTimerInfo() {
   const elapsed = Math.min(getTimerElapsed(), totalDuration());
-  const stepDuration = Number(state.stepDuration || 20);
-  const stepIndex = Math.min(steps.length - 1, Math.floor(elapsed / stepDuration));
-  const stepElapsed = elapsed - stepIndex * stepDuration;
+  let stepStart = 0;
+  let stepIndex = steps.findIndex((step) => {
+    const stepEnd = stepStart + step.duration;
+    if (elapsed < stepEnd) return true;
+    stepStart = stepEnd;
+    return false;
+  });
+  if (stepIndex < 0) {
+    stepIndex = steps.length - 1;
+    stepStart = totalDuration() - steps[stepIndex].duration;
+  }
+  const stepDuration = steps[stepIndex].duration;
+  const stepElapsed = elapsed - stepStart;
   const remaining = totalDuration() - elapsed;
   const stepRemaining = stepDuration - stepElapsed;
   return { elapsed, stepIndex, remaining, stepRemaining };
@@ -101,8 +106,8 @@ function renderTimer() {
   const progress = totalDuration() ? (info.elapsed / totalDuration()) * 360 : 0;
   const idle = !timer.running && !timer.done && info.elapsed <= 0.1;
 
-  $("#timeLeft").textContent = idle ? "00:00" : formatSeconds(info.remaining);
-  $("#stepTimeLeft").textContent = idle ? "准备开始" : `本步 ${Math.max(0, Math.ceil(info.stepRemaining))}s`;
+  $("#timeLeft").textContent = formatSeconds(info.remaining);
+  $("#stepTimeLeft").textContent = idle ? `本步 ${step.duration}s` : `本步 ${Math.max(0, Math.ceil(info.stepRemaining))}s`;
   $("#stepIndex").textContent = `第 ${info.stepIndex + 1} / ${steps.length} 步`;
   $("#stepTitle").textContent = step.title;
   $("#stepHint").textContent = step.hint;
@@ -174,7 +179,6 @@ function addRecord() {
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
     date: todayKey(now),
     time: new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit" }).format(now),
-    session: state.session,
     duration: totalDuration(),
   });
   state.records = state.records.slice(0, 90);
@@ -195,6 +199,7 @@ function getStreak() {
 function renderRecords() {
   $("#streakCount").textContent = `${getStreak()} 天`;
   $("#totalCount").textContent = `${(state.records || []).length} 次`;
+  renderCalendar();
   $("#recordsList").innerHTML = state.records?.length
     ? state.records
         .map(
@@ -202,7 +207,7 @@ function renderRecords() {
             <article class="record-item">
               <div>
                 <strong>${record.date}</strong>
-                <span>${record.session === "night" ? "晚上" : "早上"} · ${Math.round(record.duration / 60)} 分钟</span>
+                <span>${Math.round(record.duration / 60)} 分钟</span>
               </div>
               <span>${record.time}</span>
             </article>
@@ -212,12 +217,42 @@ function renderRecords() {
     : `<p class="empty">还没有刷牙记录。</p>`;
 }
 
+function renderCalendar() {
+  const calendar = $("#calendarView");
+  if (!calendar) return;
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const offset = firstDay.getDay();
+  const recordDays = new Set(
+    (state.records || [])
+      .filter((record) => {
+        const [recordYear, recordMonth] = record.date.split("-").map(Number);
+        return recordYear === year && recordMonth === month + 1;
+      })
+      .map((record) => Number(record.date.slice(-2))),
+  );
+  const cells = [];
+  for (let i = 0; i < offset; i += 1) cells.push(`<span class="calendar-day muted"></span>`);
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const done = recordDays.has(day);
+    const today = day === now.getDate();
+    cells.push(`<span class="calendar-day${done ? " done" : ""}${today ? " today" : ""}">${day}</span>`);
+  }
+  calendar.innerHTML = `
+    <div class="calendar-head">
+      <strong>${year}年${month + 1}月</strong>
+      <span>完成 ${recordDays.size} 天</span>
+    </div>
+    <div class="calendar-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+    <div class="calendar-grid">${cells.join("")}</div>
+  `;
+}
+
 function renderSettings() {
-  $("#stepDuration").value = String(state.stepDuration);
   $("#reminderTime").value = state.reminderTime || "";
-  $$(".mode-card").forEach((button) => {
-    button.classList.toggle("active", button.dataset.session === state.session);
-  });
 }
 
 function renderAll() {
@@ -243,24 +278,9 @@ function bindControls() {
   $("#startButton").addEventListener("click", startTimer);
   $("#resetButton")?.addEventListener("click", resetTimer);
 
-  $("#stepDuration").addEventListener("change", (event) => {
-    state.stepDuration = Number(event.target.value);
-    saveState();
-    resetTimer(false);
-    renderAll();
-  });
-
   $("#reminderTime").addEventListener("input", (event) => {
     state.reminderTime = event.target.value;
     saveState();
-  });
-
-  $$(".mode-card").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.session = button.dataset.session;
-      saveState();
-      renderAll();
-    });
   });
 
   $("#clearRecords").addEventListener("click", () => {

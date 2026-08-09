@@ -10,7 +10,7 @@
     <title>刷牙计时</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=40" />
+    <link rel="stylesheet" href="./styles.css?v=41" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -24,7 +24,7 @@
     </svg>
 
     <main class="app">
-      <section class="view active" data-view="today">
+      <section class="view active" data-view="checkin">
         <header class="hero">
           <div class="hero-top">
             <span id="todayText"></span>
@@ -64,12 +64,12 @@
               <path class="timer-value" d=""></path>
             </svg>
             <div>
-              <strong id="timeLeft">00:00</strong>
+              <strong id="timeLeft">02:00</strong>
               <span id="stepTimeLeft">本步 20s</span>
             </div>
           </div>
           <div class="timer-copy">
-            <p id="stepIndex">第 1 / 6 步</p>
+            <p id="stepIndex">第 1 / 7 步</p>
             <h1 id="stepTitle">上排外侧</h1>
             <p id="stepHint">牙刷轻轻打圈，照顾到牙龈边缘。</p>
           </div>
@@ -80,7 +80,7 @@
         </section>
       </section>
 
-      <section class="view mine-view" data-view="mine">
+      <section class="view data-view" data-view="data">
         <section class="panel stats-panel">
           <div>
             <span>连续完成</span>
@@ -97,44 +97,32 @@
             <h2>历史记录</h2>
             <button id="clearRecords" type="button">清空</button>
           </div>
+          <div class="calendar" id="calendarView"></div>
           <div class="records-list" id="recordsList"></div>
         </section>
+      </section>
 
+      <section class="view mine-view" data-view="mine">
         <section class="panel">
           <div class="panel-head">
             <h2>刷牙设置</h2>
           </div>
           <label class="field">
-            <span>每步时长</span>
-            <select id="stepDuration">
-              <option value="15">15 秒</option>
-              <option value="20">20 秒</option>
-              <option value="30">30 秒</option>
-            </select>
-          </label>
-          <label class="field">
             <span>提醒时间</span>
             <input id="reminderTime" type="time" />
           </label>
-        </section>
-
-        <section class="panel mode-panel">
-          <h2>打卡类型</h2>
-          <div class="mode-grid">
-            <button class="mode-card active" data-session="morning" type="button"><svg><use href="#icon-sun"></use></svg><span>早上</span></button>
-            <button class="mode-card" data-session="night" type="button"><svg><use href="#icon-moon"></use></svg><span>晚上</span></button>
-          </div>
         </section>
       </section>
     </main>
 
     <nav class="bottom-nav" aria-label="底部导航">
-      <button class="active" data-tab="today" type="button"><span><svg><use href="#icon-home"></use></svg></span>今日</button>
+      <button class="active" data-tab="checkin" type="button"><span><svg><use href="#icon-home"></use></svg></span>打卡</button>
+      <button data-tab="data" type="button"><span><svg><use href="#icon-record"></use></svg></span>数据</button>
       <button data-tab="mine" type="button"><span><svg><use href="#icon-settings"></use></svg></span>我的</button>
     </nav>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./script.js?v=40"></script>
+    <script src="./script.js?v=41"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {

@@ -437,6 +437,71 @@ svg * { vector-effect: non-scaling-stroke; }
   gap: 8px;
 }
 
+.calendar {
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid rgba(72, 166, 70, 0.16);
+  border-radius: 20px;
+  background: rgba(255, 254, 245, 0.52);
+}
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.calendar-head strong {
+  color: var(--accent-dark);
+  font-size: 15px;
+}
+
+.calendar-head span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.calendar-week,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendar-week {
+  margin-bottom: 8px;
+  color: rgba(95, 123, 101, 0.68);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.calendar-day {
+  display: grid;
+  min-height: 34px;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.calendar-day.today {
+  outline: 1px solid rgba(72, 166, 70, 0.32);
+}
+
+.calendar-day.done {
+  background: var(--accent);
+  color: #fff;
+}
+
+.calendar-day.muted {
+  opacity: 0;
+}
+
 .record-item {
   display: flex;
   align-items: center;
@@ -502,10 +567,12 @@ input:focus, select:focus {
   color: #fff;
 }
 
+.data-view,
 .mine-view {
   padding-top: 18px;
 }
 
+.data-view .panel,
 .mine-view .panel {
   margin-bottom: 24px;
   padding: 0;
@@ -514,20 +581,25 @@ input:focus, select:focus {
   background: transparent;
 }
 
+.data-view .panel-head,
 .mine-view .panel-head {
   margin-bottom: 14px;
 }
 
+.data-view .panel-head h2,
 .mine-view .panel-head h2,
 .mine-view .mode-panel h2 {
   color: var(--accent-dark);
   font-size: 16px;
 }
 
+.data-view .stats-panel,
 .mine-view .stats-panel {
   gap: 12px;
 }
 
+.data-view .stats-panel div,
+.data-view .record-item,
 .mine-view .stats-panel div,
 .mine-view .record-item,
 .mine-view input,
@@ -537,6 +609,7 @@ input:focus, select:focus {
   border: 1px solid rgba(72, 166, 70, 0.16);
 }
 
+.data-view .stats-panel div,
 .mine-view .stats-panel div {
   min-height: 82px;
 }
@@ -561,7 +634,7 @@ input:focus, select:focus {
   bottom: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   width: min(100vw, 480px);
   padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
   border-top: 2px solid var(--line);
@@ -641,7 +714,7 @@ input:focus, select:focus {
 
 @media (max-width: 370px) {
   .timer-ring { width: 250px; height: 250px; }
-  .timer-ring strong { font-size: 58px; }
+  .timer-ring strong { font-size: 50px; }
   .timer-copy h1 { font-size: 23px; }
   .controls { grid-template-columns: 1fr; }
   .step-dots { gap: 5px; }
