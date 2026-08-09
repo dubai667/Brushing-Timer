@@ -453,9 +453,33 @@ svg * { vector-effect: non-scaling-stroke; }
 }
 
 .stat-card-streak {
-  background:
-    radial-gradient(circle at 86% 82%, rgba(98, 191, 124, 0.44) 0 24%, transparent 25%),
-    linear-gradient(135deg, #dff9dd 0%, #bff0ec 100%);
+  grid-column: 1 / -1;
+  aspect-ratio: 3 / 2;
+  min-height: auto;
+  padding: 20px 18px;
+  border: 0;
+  border-radius: 0;
+  background: url("./assets/checkin-banner.png") center / cover no-repeat;
+}
+
+.stat-card-streak::before,
+.stat-card-streak::after {
+  display: none;
+}
+
+.stat-card-streak .stat-content {
+  width: 42%;
+  gap: 10px;
+}
+
+.stat-card-streak .stat-content span {
+  color: rgba(23, 53, 31, 0.8);
+  font-size: 15px;
+}
+
+.stat-card-streak .stat-content strong {
+  color: var(--ink);
+  font-size: 34px;
 }
 
 .stat-card-total {
