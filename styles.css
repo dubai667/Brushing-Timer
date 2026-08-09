@@ -543,6 +543,145 @@ input:focus, select:focus {
   background: #fffef8;
 }
 
+.setting-group {
+  margin-bottom: 26px;
+}
+
+.setting-group:last-child {
+  margin-bottom: 0;
+}
+
+.setting-group h3 {
+  margin: 0 0 12px;
+  color: var(--accent-dark);
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.radio-list {
+  display: grid;
+  gap: 10px;
+}
+
+.radio-row {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border: 1px solid rgba(72, 166, 70, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 254, 245, 0.52);
+}
+
+.radio-row input,
+.radio-pill input {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.radio-row span {
+  display: grid;
+  gap: 2px;
+}
+
+.radio-row strong,
+.order-item strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.radio-row small,
+.order-item small,
+.setting-note {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.radio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.radio-pill {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(72, 166, 70, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 254, 245, 0.52);
+  color: var(--accent-dark);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.setting-note {
+  margin: 9px 0 0;
+  line-height: 1.5;
+}
+
+.order-list {
+  display: grid;
+  gap: 8px;
+}
+
+.order-item {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  min-height: 58px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px 0 12px;
+  border: 1px solid rgba(72, 166, 70, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 254, 245, 0.52);
+}
+
+.order-index {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e7f7cf;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.order-item div:nth-child(2) {
+  display: grid;
+  gap: 3px;
+}
+
+.order-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.order-actions button {
+  width: 34px;
+  min-height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(102, 189, 88, 0.18);
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.order-actions button:disabled {
+  opacity: 0.34;
+}
+
 .mode-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -604,7 +743,10 @@ input:focus, select:focus {
 .mine-view .record-item,
 .mine-view input,
 .mine-view select,
-.mine-view .mode-card {
+.mine-view .mode-card,
+.mine-view .radio-row,
+.mine-view .radio-pill,
+.mine-view .order-item {
   background: rgba(255, 254, 245, 0.52);
   border: 1px solid rgba(72, 166, 70, 0.16);
 }

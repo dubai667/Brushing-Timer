@@ -10,7 +10,7 @@
     <title>刷牙计时</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=42" />
+    <link rel="stylesheet" href="./styles.css?v=43" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -107,10 +107,40 @@
           <div class="panel-head">
             <h2>刷牙设置</h2>
           </div>
-          <label class="field">
-            <span>提醒时间</span>
-            <input id="reminderTime" type="time" />
-          </label>
+          <div class="setting-group">
+            <h3>刷牙时间</h3>
+            <div class="radio-list" id="durationOptions">
+              <label class="radio-row">
+                <input type="radio" name="brushDuration" value="2" />
+                <span>
+                  <strong>2 分钟</strong>
+                  <small>标准刷牙时长</small>
+                </span>
+              </label>
+              <label class="radio-row">
+                <input type="radio" name="brushDuration" value="3" />
+                <span>
+                  <strong>3 分钟</strong>
+                  <small>更充分清洁</small>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h3>提醒时间</h3>
+            <div class="radio-grid" id="reminderOptions">
+              <label class="radio-pill"><input type="radio" name="reminderPeriod" value="morning" /><span>早上</span></label>
+              <label class="radio-pill"><input type="radio" name="reminderPeriod" value="noon" /><span>中午</span></label>
+              <label class="radio-pill"><input type="radio" name="reminderPeriod" value="night" /><span>晚上</span></label>
+            </div>
+            <p class="setting-note">12 点以前算早上，12 点到 17 点算中午，17 点以后算晚上。</p>
+          </div>
+
+          <div class="setting-group">
+            <h3>刷牙顺序</h3>
+            <div class="order-list" id="orderList"></div>
+          </div>
         </section>
       </section>
     </main>
@@ -122,7 +152,7 @@
     </nav>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./script.js?v=42"></script>
+    <script src="./script.js?v=43"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {

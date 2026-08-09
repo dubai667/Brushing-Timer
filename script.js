@@ -1,17 +1,19 @@
 const STORAGE_KEY = "toothTimer:v1";
 
 const steps = [
-  { title: "上排外侧", duration: 20, hint: "牙刷轻轻打圈，照顾到牙龈边缘。", zone: "M83 113c15-12 38-13 58-4", brush: "translate(0 0)" },
-  { title: "上排内侧", duration: 20, hint: "牙刷稍微倾斜，慢慢刷到门牙内侧。", zone: "M102 104c18 17 47 17 65 0", brush: "translate(-18 24) rotate(-14deg)" },
-  { title: "上排咬合面", duration: 15, hint: "前后来回刷，不要漏掉臼齿。", zone: "M86 143c22-8 55-8 78 1", brush: "translate(-4 42) rotate(12deg)" },
-  { title: "下排外侧", duration: 20, hint: "从左到右移动，保持小幅度震动。", zone: "M87 168c24 10 62 10 85-2", brush: "translate(-12 72) rotate(-8deg)" },
-  { title: "下排内侧", duration: 20, hint: "竖起牙刷刷前牙内侧，动作轻一点。", zone: "M105 178c18 17 40 17 58 0", brush: "translate(-35 82) rotate(-18deg)" },
-  { title: "下排咬合面", duration: 15, hint: "最后刷下排咬合面。", zone: "M92 190c23 12 56 12 80 0", brush: "translate(-5 96) rotate(10deg)" },
-  { title: "舌头表面", duration: 10, hint: "轻刷舌头表面，动作放轻一点。", zone: "M104 158c15 12 40 12 55 0", brush: "translate(-24 70) rotate(-4deg)" },
+  { id: "upperOuter", title: "上排外侧", duration: 20, hint: "牙刷轻轻打圈，照顾到牙龈边缘。", zone: "M83 113c15-12 38-13 58-4", brush: "translate(0 0)" },
+  { id: "upperInner", title: "上排内侧", duration: 20, hint: "牙刷稍微倾斜，慢慢刷到门牙内侧。", zone: "M102 104c18 17 47 17 65 0", brush: "translate(-18 24) rotate(-14deg)" },
+  { id: "upperBite", title: "上排咬合面", duration: 15, hint: "前后来回刷，不要漏掉臼齿。", zone: "M86 143c22-8 55-8 78 1", brush: "translate(-4 42) rotate(12deg)" },
+  { id: "lowerOuter", title: "下排外侧", duration: 20, hint: "从左到右移动，保持小幅度震动。", zone: "M87 168c24 10 62 10 85-2", brush: "translate(-12 72) rotate(-8deg)" },
+  { id: "lowerInner", title: "下排内侧", duration: 20, hint: "竖起牙刷刷前牙内侧，动作轻一点。", zone: "M105 178c18 17 40 17 58 0", brush: "translate(-35 82) rotate(-18deg)" },
+  { id: "lowerBite", title: "下排咬合面", duration: 15, hint: "最后刷下排咬合面。", zone: "M92 190c23 12 56 12 80 0", brush: "translate(-5 96) rotate(10deg)" },
+  { id: "tongue", title: "舌头表面", duration: 10, hint: "轻刷舌头表面，动作放轻一点。", zone: "M104 158c15 12 40 12 55 0", brush: "translate(-24 70) rotate(-4deg)" },
 ];
 
 const defaultState = {
-  reminderTime: "21:30",
+  brushMinutes: 2,
+  reminderPeriod: getPeriodByHour(new Date().getHours()),
+  stepOrder: steps.map((step) => step.id),
   records: [],
 };
 
@@ -29,18 +31,54 @@ const $$ = (selector) => [...document.querySelectorAll(selector)];
 
 function loadState() {
   try {
-    return { ...defaultState, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    return normalizeState({ ...defaultState, ...saved });
   } catch {
     return { ...defaultState };
   }
+}
+
+function normalizeState(nextState) {
+  const validIds = new Set(steps.map((step) => step.id));
+  const order = Array.isArray(nextState.stepOrder) ? nextState.stepOrder.filter((id) => validIds.has(id)) : [];
+  steps.forEach((step) => {
+    if (!order.includes(step.id)) order.push(step.id);
+  });
+  return {
+    ...nextState,
+    brushMinutes: [2, 3].includes(Number(nextState.brushMinutes)) ? Number(nextState.brushMinutes) : 2,
+    reminderPeriod: ["morning", "noon", "night"].includes(nextState.reminderPeriod)
+      ? nextState.reminderPeriod
+      : getPeriodByHour(new Date().getHours()),
+    stepOrder: order,
+  };
 }
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+function getPeriodByHour(hour) {
+  if (hour < 12) return "morning";
+  if (hour < 17) return "noon";
+  return "night";
+}
+
+function getPeriodLabel(period = state.reminderPeriod) {
+  return { morning: "早上", noon: "中午", night: "晚上" }[period] || "早上";
+}
+
+function getOrderedSteps() {
+  const byId = new Map(steps.map((step) => [step.id, step]));
+  return state.stepOrder.map((id) => byId.get(id)).filter(Boolean);
+}
+
+function getStepDuration(step) {
+  return step.duration * (Number(state.brushMinutes || 2) / 2);
+}
+
 function totalDuration() {
-  return steps.reduce((sum, step) => sum + step.duration, 0);
+  return Number(state.brushMinutes || 2) * 60;
 }
 
 function formatSeconds(value) {
@@ -60,7 +98,7 @@ function renderTodayText() {
     day: "numeric",
     weekday: "long",
   }).format(new Date());
-  $("#sessionLabel").textContent = "刷牙打卡";
+  $("#sessionLabel").textContent = `${getPeriodLabel(getPeriodByHour(new Date().getHours()))}打卡`;
 }
 
 function getTimerElapsed() {
@@ -70,18 +108,19 @@ function getTimerElapsed() {
 
 function getTimerInfo() {
   const elapsed = Math.min(getTimerElapsed(), totalDuration());
+  const orderedSteps = getOrderedSteps();
   let stepStart = 0;
-  let stepIndex = steps.findIndex((step) => {
-    const stepEnd = stepStart + step.duration;
+  let stepIndex = orderedSteps.findIndex((step) => {
+    const stepEnd = stepStart + getStepDuration(step);
     if (elapsed < stepEnd) return true;
     stepStart = stepEnd;
     return false;
   });
   if (stepIndex < 0) {
-    stepIndex = steps.length - 1;
-    stepStart = totalDuration() - steps[stepIndex].duration;
+    stepIndex = orderedSteps.length - 1;
+    stepStart = totalDuration() - getStepDuration(orderedSteps[stepIndex]);
   }
-  const stepDuration = steps[stepIndex].duration;
+  const stepDuration = getStepDuration(orderedSteps[stepIndex]);
   const stepElapsed = elapsed - stepStart;
   const remaining = totalDuration() - elapsed;
   const stepRemaining = stepDuration - stepElapsed;
@@ -102,13 +141,14 @@ function getProgressArcPath(degrees) {
 
 function renderTimer() {
   const info = getTimerInfo();
-  const step = steps[info.stepIndex];
+  const orderedSteps = getOrderedSteps();
+  const step = orderedSteps[info.stepIndex];
   const progress = totalDuration() ? (info.elapsed / totalDuration()) * 360 : 0;
   const idle = !timer.running && !timer.done && info.elapsed <= 0.1;
 
   $("#timeLeft").textContent = formatSeconds(info.elapsed);
-  $("#stepTimeLeft").textContent = idle ? `本步 ${step.duration}s` : `本步 ${Math.max(0, Math.ceil(info.stepRemaining))}s`;
-  $("#stepIndex").textContent = `第 ${info.stepIndex + 1} / ${steps.length} 步`;
+  $("#stepTimeLeft").textContent = idle ? `本步 ${Math.round(getStepDuration(step))}s` : `本步 ${Math.max(0, Math.ceil(info.stepRemaining))}s`;
+  $("#stepIndex").textContent = `第 ${info.stepIndex + 1} / ${orderedSteps.length} 步`;
   $("#stepTitle").textContent = step.title;
   $("#stepHint").textContent = step.hint;
   const ring = $(".timer-ring");
@@ -131,7 +171,7 @@ function renderTimer() {
 function renderSteps() {
   const stepList = $("#stepList");
   if (!stepList) return;
-  stepList.innerHTML = steps
+  stepList.innerHTML = getOrderedSteps()
     .map(
       (_step, index) => `<span class="step-dot" aria-label="第 ${index + 1} 步">${index + 1}</span>`,
     )
@@ -252,7 +292,36 @@ function renderCalendar() {
 }
 
 function renderSettings() {
-  $("#reminderTime").value = state.reminderTime || "";
+  $$("input[name='brushDuration']").forEach((input) => {
+    input.checked = Number(input.value) === Number(state.brushMinutes);
+  });
+  $$("input[name='reminderPeriod']").forEach((input) => {
+    input.checked = input.value === state.reminderPeriod;
+  });
+  renderOrderList();
+}
+
+function renderOrderList() {
+  const orderList = $("#orderList");
+  if (!orderList) return;
+  const orderedSteps = getOrderedSteps();
+  orderList.innerHTML = orderedSteps
+    .map(
+      (step, index) => `
+        <article class="order-item" data-step-id="${step.id}">
+          <span class="order-index">${index + 1}</span>
+          <div>
+            <strong>${step.title}</strong>
+            <small>${Math.round(getStepDuration(step))} 秒</small>
+          </div>
+          <div class="order-actions">
+            <button type="button" data-move="up" aria-label="${step.title}上移" ${index === 0 ? "disabled" : ""}>上</button>
+            <button type="button" data-move="down" aria-label="${step.title}下移" ${index === orderedSteps.length - 1 ? "disabled" : ""}>下</button>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
 }
 
 function renderAll() {
@@ -278,9 +347,35 @@ function bindControls() {
   $("#startButton").addEventListener("click", startTimer);
   $("#resetButton")?.addEventListener("click", resetTimer);
 
-  $("#reminderTime").addEventListener("input", (event) => {
-    state.reminderTime = event.target.value;
+  $$("input[name='brushDuration']").forEach((input) => {
+    input.addEventListener("change", () => {
+      state.brushMinutes = Number(input.value);
+      saveState();
+      resetTimer(false);
+      renderAll();
+    });
+  });
+
+  $$("input[name='reminderPeriod']").forEach((input) => {
+    input.addEventListener("change", () => {
+      state.reminderPeriod = input.value;
+      saveState();
+      renderSettings();
+      toast(`已设置${getPeriodLabel()}提醒`);
+    });
+  });
+
+  $("#orderList").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-move]");
+    if (!button) return;
+    const item = button.closest(".order-item");
+    const index = state.stepOrder.indexOf(item.dataset.stepId);
+    const targetIndex = button.dataset.move === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= state.stepOrder.length) return;
+    [state.stepOrder[index], state.stepOrder[targetIndex]] = [state.stepOrder[targetIndex], state.stepOrder[index]];
     saveState();
+    resetTimer(false);
+    renderAll();
   });
 
   $("#clearRecords").addEventListener("click", () => {
