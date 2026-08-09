@@ -214,7 +214,7 @@ svg * { vector-effect: non-scaling-stroke; }
 .timer-track,
 .timer-value {
   fill: none;
-  stroke-width: 40;
+  stroke-width: 28;
 }
 
 .timer-track {
