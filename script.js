@@ -10,14 +10,40 @@ const steps = [
   { id: "tongue", title: "舌头表面", duration: 10, hint: "轻刷舌头表面，动作放轻一点。", zone: "M104 158c15 12 40 12 55 0", brush: "translate(-24 70) rotate(-4deg)" },
 ];
 
+const orderPresets = {
+  upperLowerOuterInner: {
+    label: "上下外内",
+    order: ["upperOuter", "lowerOuter", "upperInner", "lowerInner", "upperBite", "lowerBite", "tongue"],
+  },
+  lowerUpperOuterInner: {
+    label: "下上外内",
+    order: ["lowerOuter", "upperOuter", "lowerInner", "upperInner", "lowerBite", "upperBite", "tongue"],
+  },
+  innerOuterUpperLower: {
+    label: "内外上下",
+    order: ["upperInner", "lowerInner", "upperOuter", "lowerOuter", "upperBite", "lowerBite", "tongue"],
+  },
+  innerOuterLowerUpper: {
+    label: "内外下上",
+    order: ["lowerInner", "upperInner", "lowerOuter", "upperOuter", "lowerBite", "upperBite", "tongue"],
+  },
+};
+
 const defaultState = {
+  brushCount: 2,
   brushMinutes: 2,
   reminderPeriod: getPeriodByHour(new Date().getHours()),
-  stepOrder: steps.map((step) => step.id),
+  reminderTimes: {
+    morning: "08:00",
+    noon: "12:30",
+    night: "21:30",
+  },
+  orderPreset: "upperLowerOuterInner",
   records: [],
 };
 
 let state = loadState();
+let lastReminderKey = localStorage.getItem("toothTimer:lastReminder") || "";
 let timer = {
   running: false,
   done: false,
@@ -39,18 +65,17 @@ function loadState() {
 }
 
 function normalizeState(nextState) {
-  const validIds = new Set(steps.map((step) => step.id));
-  const order = Array.isArray(nextState.stepOrder) ? nextState.stepOrder.filter((id) => validIds.has(id)) : [];
-  steps.forEach((step) => {
-    if (!order.includes(step.id)) order.push(step.id);
-  });
+  const reminderTimes = { ...defaultState.reminderTimes, ...(nextState.reminderTimes || {}) };
+  const orderPreset = orderPresets[nextState.orderPreset] ? nextState.orderPreset : defaultState.orderPreset;
   return {
     ...nextState,
+    brushCount: [2, 3].includes(Number(nextState.brushCount)) ? Number(nextState.brushCount) : 2,
     brushMinutes: [2, 3].includes(Number(nextState.brushMinutes)) ? Number(nextState.brushMinutes) : 2,
     reminderPeriod: ["morning", "noon", "night"].includes(nextState.reminderPeriod)
       ? nextState.reminderPeriod
       : getPeriodByHour(new Date().getHours()),
-    stepOrder: order,
+    reminderTimes,
+    orderPreset,
   };
 }
 
@@ -59,18 +84,51 @@ function saveState() {
 }
 
 function getPeriodByHour(hour) {
-  if (hour < 12) return "morning";
+  if (hour >= 1 && hour < 12) return "morning";
   if (hour < 17) return "noon";
   return "night";
 }
 
 function getPeriodLabel(period = state.reminderPeriod) {
-  return { morning: "早上", noon: "中午", night: "晚上" }[period] || "早上";
+  return { morning: "早间", noon: "午间", night: "晚间" }[period] || "早间";
+}
+
+function getRecordPeriodLabel(time = "") {
+  const hour = Number(String(time).split(":")[0]);
+  const period = getPeriodByHour(Number.isFinite(hour) ? hour : new Date().getHours());
+  return { morning: "早间", noon: "午间", night: "晚间" }[period] || "早间";
+}
+
+function notifyBrushReminder(period) {
+  const label = getPeriodLabel(period);
+  toast(`${label}刷牙时间到了`);
+  if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification("刷牙提醒", {
+      body: `${label}刷牙时间到了`,
+      icon: "./icon.svg",
+    });
+  }
+}
+
+function checkReminders() {
+  const now = new Date();
+  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const today = todayKey(now);
+  Object.entries(state.reminderTimes || {}).forEach(([period, reminderTime]) => {
+    if (Number(state.brushCount) < 3 && period === "noon") return;
+    if (reminderTime !== currentTime) return;
+    const reminderKey = `${today}:${period}:${reminderTime}`;
+    if (reminderKey === lastReminderKey) return;
+    lastReminderKey = reminderKey;
+    localStorage.setItem("toothTimer:lastReminder", reminderKey);
+    notifyBrushReminder(period);
+  });
 }
 
 function getOrderedSteps() {
   const byId = new Map(steps.map((step) => [step.id, step]));
-  return state.stepOrder.map((id) => byId.get(id)).filter(Boolean);
+  return orderPresets[state.orderPreset].order.map((id) => byId.get(id)).filter(Boolean);
 }
 
 function getStepDuration(step) {
@@ -102,7 +160,6 @@ function renderTodayText() {
     day: "numeric",
     weekday: "long",
   }).format(new Date());
-  $("#sessionLabel").textContent = `${getPeriodLabel(getPeriodByHour(new Date().getHours()))}打卡`;
 }
 
 function getTimerElapsed() {
@@ -151,7 +208,7 @@ function renderTimer() {
   const idle = !timer.running && !timer.done && info.elapsed <= 0.1;
 
   $("#timeLeft").textContent = formatSeconds(info.elapsed);
-  $("#stepTimeLeft").textContent = idle ? `本步 ${Math.round(getStepDuration(step))}s` : `本步 ${Math.max(0, Math.ceil(info.stepRemaining))}s`;
+  $("#stepTimeLeft").textContent = `${getPeriodLabel(getPeriodByHour(new Date().getHours()))}打卡`;
   $("#stepIndex").textContent = `第 ${info.stepIndex + 1} / ${orderedSteps.length} 步`;
   $("#stepTitle").textContent = step.title;
   $("#stepHint").textContent = step.hint;
@@ -241,8 +298,8 @@ function getStreak() {
 }
 
 function renderRecords() {
-  $("#streakCount").innerHTML = `${getStreak()}<span class="stat-unit">天</span>`;
-  $("#totalCount").innerHTML = `${(state.records || []).length}<span class="stat-unit">次</span>`;
+  $("#streakCount").innerHTML = `<span class="stat-value">${getStreak()}</span><span class="stat-unit">天</span>`;
+  $("#totalCount").innerHTML = `<span class="stat-value">${(state.records || []).length}</span><span class="stat-unit">次</span>`;
   renderCalendar();
   $("#recordsList").innerHTML = state.records?.length
     ? state.records
@@ -251,9 +308,11 @@ function renderRecords() {
             <article class="record-item">
               <div>
                 <strong>${record.date}</strong>
-                <span>${Math.round(record.duration / 60)} 分钟</span>
               </div>
-              <span>${record.time}</span>
+              <div class="record-meta">
+                <span>${record.time}</span>
+                <span class="record-period">${getRecordPeriodLabel(record.time)}</span>
+              </div>
             </article>
           `,
         )
@@ -296,11 +355,18 @@ function renderCalendar() {
 }
 
 function renderSettings() {
+  $$("input[name='brushCount']").forEach((input) => {
+    input.checked = Number(input.value) === Number(state.brushCount);
+  });
   $$("input[name='brushDuration']").forEach((input) => {
     input.checked = Number(input.value) === Number(state.brushMinutes);
   });
-  $$("input[name='reminderPeriod']").forEach((input) => {
-    input.checked = input.value === state.reminderPeriod;
+  $$("input[name='reminderTime']").forEach((input) => {
+    input.value = state.reminderTimes?.[input.dataset.period] || "";
+    input.closest(".time-select")?.querySelector(".time-value").replaceChildren(input.value);
+  });
+  $$(".reminder-row[data-period='noon']").forEach((row) => {
+    row.hidden = Number(state.brushCount) < 3;
   });
   renderOrderList();
 }
@@ -308,23 +374,12 @@ function renderSettings() {
 function renderOrderList() {
   const orderList = $("#orderList");
   if (!orderList) return;
-  const orderedSteps = getOrderedSteps();
-  orderList.innerHTML = orderedSteps
-    .map(
-      (step, index) => `
-        <article class="order-item" data-step-id="${step.id}">
-          <span class="order-index">${index + 1}</span>
-          <div>
-            <strong>${step.title}</strong>
-            <small>${Math.round(getStepDuration(step))} 秒</small>
-          </div>
-          <div class="order-actions">
-            <button type="button" data-move="up" aria-label="${step.title}上移" ${index === 0 ? "disabled" : ""}><svg><use href="#icon-up"></use></svg></button>
-            <button type="button" data-move="down" aria-label="${step.title}下移" ${index === orderedSteps.length - 1 ? "disabled" : ""}><svg><use href="#icon-down"></use></svg></button>
-          </div>
-        </article>
-      `,
-    )
+  orderList.innerHTML = Object.entries(orderPresets)
+    .map(([key, preset]) => `
+      <button class="order-preset${state.orderPreset === key ? " active" : ""}" type="button" data-order-preset="${key}">
+        ${preset.label}
+      </button>
+    `)
     .join("");
 }
 
@@ -351,6 +406,14 @@ function bindControls() {
   $("#startButton").addEventListener("click", startTimer);
   $("#resetButton")?.addEventListener("click", resetTimer);
 
+  $$("input[name='brushCount']").forEach((input) => {
+    input.addEventListener("change", () => {
+      state.brushCount = Number(input.value);
+      saveState();
+      renderAll();
+    });
+  });
+
   $$("input[name='brushDuration']").forEach((input) => {
     input.addEventListener("change", () => {
       state.brushMinutes = Number(input.value);
@@ -360,35 +423,40 @@ function bindControls() {
     });
   });
 
-  $$("input[name='reminderPeriod']").forEach((input) => {
+  $$("input[name='reminderTime']").forEach((input) => {
     input.addEventListener("change", () => {
-      state.reminderPeriod = input.value;
+      state.reminderTimes = {
+        ...state.reminderTimes,
+        [input.dataset.period]: input.value,
+      };
       saveState();
       renderSettings();
-      toast(`已设置${getPeriodLabel()}提醒`);
+      toast(`已设置${getPeriodLabel(input.dataset.period)} ${input.value}`);
     });
   });
 
+  $("#notificationButton")?.addEventListener("click", async () => {
+    if (!("Notification" in window)) {
+      toast("当前浏览器不支持通知");
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    toast(permission === "granted" ? "通知提醒已开启" : "通知权限未开启");
+  });
+
+  $("#reminderHelpButton")?.addEventListener("click", () => {
+    toast("1点到12点早间，12点到17点午间，17点到1点晚间");
+  });
+
   $("#orderList").addEventListener("click", (event) => {
-    const button = event.target.closest("button[data-move]");
+    const button = event.target.closest("button[data-order-preset]");
     if (!button) return;
-    const item = button.closest(".order-item");
-    const index = state.stepOrder.indexOf(item.dataset.stepId);
-    const targetIndex = button.dataset.move === "up" ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= state.stepOrder.length) return;
-    [state.stepOrder[index], state.stepOrder[targetIndex]] = [state.stepOrder[targetIndex], state.stepOrder[index]];
+    state.orderPreset = button.dataset.orderPreset;
     saveState();
     resetTimer(false);
     renderAll();
   });
 
-  $("#clearRecords").addEventListener("click", () => {
-    if (!confirm("确定清空刷牙记录？")) return;
-    state.records = [];
-    saveState();
-    renderRecords();
-    toast("已清空");
-  });
 }
 
 function toast(message) {
@@ -402,3 +470,5 @@ function toast(message) {
 bindTabs();
 bindControls();
 renderAll();
+checkReminders();
+setInterval(checkReminders, 30 * 1000);
