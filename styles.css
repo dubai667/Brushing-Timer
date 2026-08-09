@@ -162,7 +162,7 @@ svg * { vector-effect: non-scaling-stroke; }
   z-index: 2;
   display: grid;
   justify-items: center;
-  gap: 20px;
+  gap: 40px;
   margin-top: 54px;
   padding: 18px 0 10px;
   border-radius: 0;
@@ -270,7 +270,7 @@ svg * { vector-effect: non-scaling-stroke; }
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
-  margin: 90px 0 12px;
+  margin: 70px 0 12px;
 }
 
 .primary-action {
