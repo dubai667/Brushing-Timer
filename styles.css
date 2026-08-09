@@ -239,7 +239,7 @@ svg * { vector-effect: non-scaling-stroke; }
 .timer-ring strong {
   display: block;
   color: var(--accent);
-  font-size: 60px;
+  font-size: 50px;
   line-height: 1;
   font-weight: 800;
 }
