@@ -453,12 +453,6 @@ svg * { vector-effect: non-scaling-stroke; }
 }
 
 .stat-card-streak {
-  grid-column: 1 / -1;
-  aspect-ratio: 3 / 2;
-  min-height: auto;
-  padding: 20px 18px;
-  border: 0;
-  border-radius: 0;
   background: url("./assets/checkin-banner.png") center / cover no-repeat;
 }
 
@@ -468,18 +462,18 @@ svg * { vector-effect: non-scaling-stroke; }
 }
 
 .stat-card-streak .stat-content {
-  width: 42%;
-  gap: 10px;
+  width: 58%;
+  gap: 4px;
 }
 
 .stat-card-streak .stat-content span {
   color: rgba(23, 53, 31, 0.8);
-  font-size: 15px;
+  font-size: 13px;
 }
 
 .stat-card-streak .stat-content strong {
   color: var(--ink);
-  font-size: 34px;
+  font-size: 30px;
 }
 
 .stat-card-total {
