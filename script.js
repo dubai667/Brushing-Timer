@@ -86,13 +86,13 @@ function getTimerInfo() {
 function getProgressArcPath(degrees) {
   if (degrees <= 0.1) return "";
   if (degrees >= 359.9) {
-    return "M 140 -100 A 240 240 0 1 1 140 380 A 240 240 0 1 1 140 -100";
+    return "M 140 -50 A 190 190 0 1 1 140 330 A 190 190 0 1 1 140 -50";
   }
   const radians = degrees * (Math.PI / 180);
-  const x = 140 + Math.sin(radians) * 240;
-  const y = 140 - Math.cos(radians) * 240;
+  const x = 140 + Math.sin(radians) * 190;
+  const y = 140 - Math.cos(radians) * 190;
   const largeArc = degrees > 180 ? 1 : 0;
-  return `M 140 -100 A 240 240 0 ${largeArc} 1 ${x} ${y}`;
+  return `M 140 -50 A 190 190 0 ${largeArc} 1 ${x} ${y}`;
 }
 
 function renderTimer() {
