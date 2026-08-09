@@ -99,9 +99,10 @@ function renderTimer() {
   const info = getTimerInfo();
   const step = steps[info.stepIndex];
   const progress = totalDuration() ? (info.elapsed / totalDuration()) * 360 : 0;
+  const idle = !timer.running && !timer.done && info.elapsed <= 0.1;
 
-  $("#timeLeft").textContent = formatSeconds(info.remaining);
-  $("#stepTimeLeft").textContent = `本步 ${Math.max(0, Math.ceil(info.stepRemaining))}s`;
+  $("#timeLeft").textContent = idle ? "00:00" : formatSeconds(info.remaining);
+  $("#stepTimeLeft").textContent = idle ? "准备开始" : `本步 ${Math.max(0, Math.ceil(info.stepRemaining))}s`;
   $("#stepIndex").textContent = `第 ${info.stepIndex + 1} / ${steps.length} 步`;
   $("#stepTitle").textContent = step.title;
   $("#stepHint").textContent = step.hint;

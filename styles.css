@@ -502,13 +502,66 @@ input:focus, select:focus {
   color: #fff;
 }
 
+.mine-view {
+  padding-top: 18px;
+}
+
+.mine-view .panel {
+  margin-bottom: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.mine-view .panel-head {
+  margin-bottom: 14px;
+}
+
+.mine-view .panel-head h2,
+.mine-view .mode-panel h2 {
+  color: var(--accent-dark);
+  font-size: 16px;
+}
+
+.mine-view .stats-panel {
+  gap: 12px;
+}
+
+.mine-view .stats-panel div,
+.mine-view .record-item,
+.mine-view input,
+.mine-view select,
+.mine-view .mode-card {
+  background: rgba(255, 254, 245, 0.52);
+  border: 1px solid rgba(72, 166, 70, 0.16);
+}
+
+.mine-view .stats-panel div {
+  min-height: 82px;
+}
+
+.mine-view .field {
+  margin-bottom: 14px;
+}
+
+.mine-view .mode-card {
+  min-height: 72px;
+}
+
+.mine-view .mode-card.active {
+  background: rgba(102, 189, 88, 0.88);
+  border-color: rgba(72, 166, 70, 0.35);
+  color: #fff;
+}
+
 .bottom-nav {
   position: fixed;
   left: 50%;
   bottom: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   width: min(100vw, 480px);
   padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
   border-top: 2px solid var(--line);
