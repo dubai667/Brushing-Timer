@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#cdeca9" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="刷牙计时" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>刷牙计时</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css?v=31" />
+  </head>
+  <body>
+    <svg class="sprite" aria-hidden="true">
+      <symbol id="icon-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></symbol>
+      <symbol id="icon-record" viewBox="0 0 24 24"><path d="M6 5h12v15H6z"/><path d="M9 9h6M9 13h6M9 17h4"/></symbol>
+      <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M4.2 7.5l2.6 1.5M17.2 15l2.6 1.5M19.8 7.5 17.2 9M6.8 15l-2.6 1.5"/></symbol>
+      <symbol id="icon-play" viewBox="0 0 24 24"><path d="M9 6v12l10-6z"/></symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></symbol>
+      <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M19.8 4.2l-2.1 2.1M6.3 17.7l-2.1 2.1"/></symbol>
+      <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M6 14a6 6 0 0 0 9 5.2A8 8 0 0 1 13 4a6 6 0 0 0-7 10z"/></symbol>
+    </svg>
+
+    <main class="app">
+      <section class="view active" data-view="today">
+        <header class="hero">
+          <div class="hero-top">
+            <span id="todayText"></span>
+            <span id="sessionLabel">早晚各一次</span>
+          </div>
+
+          <section class="brush-stage" aria-live="polite" hidden>
+            <svg class="tooth-scene" viewBox="0 0 320 250" role="img" aria-label="牙齿和牙刷动画">
+              <path class="cloud cloud-a" d="M32 44c8-14 34-14 43 0 14-4 29 5 31 20H10c-2-12 8-21 22-20z"/>
+              <path class="cloud cloud-b" d="M235 55c7-13 28-13 36 0 13-3 26 5 29 18h-82c-1-10 6-18 17-18z"/>
+              <g class="sparkles">
+                <path d="M70 92v12M64 98h12M255 95v12M249 101h12"/>
+              </g>
+              <g class="tooth-wrap">
+                <path id="toothShape" class="tooth" d="M109 91c-25-4-44 14-42 42 1 23 12 41 26 58 8 10 18 7 20-5l5-30c2-9 13-9 15 0l6 34c2 11 17 13 24 3 14-20 24-39 25-62 2-29-20-47-47-39-11 3-20 3-32-1z"/>
+                <path class="tooth-shine" d="M92 121c5-13 15-19 31-17"/>
+                <circle class="eye" cx="117" cy="135" r="4"/>
+                <circle class="eye" cx="143" cy="135" r="4"/>
+                <path class="mouth" d="M123 151c7 7 18 7 25 0"/>
+                <path class="cheek" d="M100 148h10M151 148h10"/>
+                <path class="highlight-zone" id="highlightZone" d="M83 113c15-12 38-13 58-4" />
+              </g>
+              <g class="brush" id="brushSvg">
+                <path class="brush-handle" d="M202 72l75 42c8 5 9 16 2 22-6 6-15 6-22 0l-66-54z"/>
+                <path class="brush-neck" d="M178 82l27-16 11 22-30 13z"/>
+                <rect class="brush-head" x="150" y="74" width="38" height="28" rx="8" transform="rotate(-22 169 88)"/>
+                <path class="bristles" d="M151 83l-18 8M156 91l-19 9M162 98l-17 8"/>
+              </g>
+            </svg>
+          </section>
+        </header>
+
+        <section class="timer-card">
+          <div class="timer-ring no-progress">
+            <svg class="timer-progress" viewBox="-40 -40 360 360" aria-hidden="true">
+              <circle class="timer-track" cx="140" cy="140" r="160"></circle>
+              <path class="timer-value" d=""></path>
+            </svg>
+            <div>
+              <strong id="timeLeft">02:00</strong>
+              <span id="stepTimeLeft">本步 20s</span>
+            </div>
+          </div>
+          <div class="timer-copy">
+            <p id="stepIndex">第 1 / 6 步</p>
+            <h1 id="stepTitle">上排外侧</h1>
+            <p id="stepHint">牙刷轻轻打圈，照顾到牙龈边缘。</p>
+          </div>
+        </section>
+
+        <section class="controls">
+          <button class="primary-action" id="startButton" type="button"><span>开始刷牙</span></button>
+        </section>
+      </section>
+
+      <section class="view" data-view="records">
+        <section class="panel stats-panel">
+          <div>
+            <span>连续完成</span>
+            <strong id="streakCount">0 天</strong>
+          </div>
+          <div>
+            <span>总完成</span>
+            <strong id="totalCount">0 次</strong>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>历史记录</h2>
+            <button id="clearRecords" type="button">清空</button>
+          </div>
+          <div class="records-list" id="recordsList"></div>
+        </section>
+      </section>
+
+      <section class="view" data-view="settings">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>刷牙设置</h2>
+          </div>
+          <label class="field">
+            <span>每步时长</span>
+            <select id="stepDuration">
+              <option value="15">15 秒</option>
+              <option value="20">20 秒</option>
+              <option value="30">30 秒</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>提醒时间</span>
+            <input id="reminderTime" type="time" />
+          </label>
+        </section>
+
+        <section class="panel mode-panel">
+          <h2>打卡类型</h2>
+          <div class="mode-grid">
+            <button class="mode-card active" data-session="morning" type="button"><svg><use href="#icon-sun"></use></svg><span>早上</span></button>
+            <button class="mode-card" data-session="night" type="button"><svg><use href="#icon-moon"></use></svg><span>晚上</span></button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="底部导航">
+      <button class="active" data-tab="today" type="button"><span><svg><use href="#icon-home"></use></svg></span>今日</button>
+      <button data-tab="records" type="button"><span><svg><use href="#icon-record"></use></svg></span>记录</button>
+      <button data-tab="settings" type="button"><span><svg><use href="#icon-settings"></use></svg></span>设置</button>
+    </nav>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./script.js?v=31"></script>
+  </body>
+</html>
