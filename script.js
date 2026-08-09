@@ -74,7 +74,11 @@ function getOrderedSteps() {
 }
 
 function getStepDuration(step) {
-  return step.duration * (Number(state.brushMinutes || 2) / 2);
+  if (Number(state.brushMinutes) === 3) {
+    if (step.id === "upperBite" || step.id === "lowerBite" || step.id === "tongue") return 20;
+    return 30;
+  }
+  return step.duration;
 }
 
 function totalDuration() {
