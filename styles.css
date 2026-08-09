@@ -292,7 +292,7 @@ svg * { vector-effect: non-scaling-stroke; }
 
 .primary-action {
   justify-self: center;
-  width: min(260px, 82vw);
+  width: min(280px, 82vw);
   background: linear-gradient(180deg, #65c75c 0%, #43a949 100%);
   color: #fff;
   font-size: 16px;
