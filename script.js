@@ -50,10 +50,100 @@ let timer = {
   startedAt: null,
   elapsed: 0,
   interval: null,
+  lastStepIndex: 0,
+  lastCountdownKey: "",
 };
+let audioContext = null;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+function getAudioContext() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+  if (!audioContext) audioContext = new AudioContextClass();
+  if (audioContext.state === "suspended") audioContext.resume();
+  return audioContext;
+}
+
+function playTone(frequency, duration = 0.12, volume = 0.035, delay = 0) {
+  const context = getAudioContext();
+  if (!context) return;
+  const start = context.currentTime + delay;
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(frequency, start);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(start);
+  oscillator.stop(start + duration + 0.02);
+}
+
+function playUiSound(type) {
+  if (type === "start") {
+    playTone(660, 0.1, 0.05);
+    playTone(880, 0.11, 0.046, 0.08);
+    return;
+  }
+  if (type === "step") {
+    playTone(740, 0.09, 0.044);
+    return;
+  }
+  if (type === "countdown") {
+    playTone(520, 0.055, 0.034);
+    return;
+  }
+  if (type === "complete") {
+    playTone(620, 0.18, 0.07);
+    playTone(780, 0.2, 0.07, 0.14);
+    playTone(980, 0.22, 0.065, 0.3);
+    playTone(1240, 0.28, 0.06, 0.48);
+  }
+}
+
+function restartAnimation(element, className) {
+  if (!element) return;
+  element.classList.remove(className);
+  void element.offsetWidth;
+  element.classList.add(className);
+}
+
+function launchConfetti() {
+  const container = $("#confettiLayer");
+  if (!container) return;
+  container.replaceChildren();
+  const colors = ["#66bd58", "#a7df70", "#ffd768", "#8fd7ff", "#ff9fb4"];
+  Array.from({ length: 54 }).forEach((_, index) => {
+    const piece = document.createElement("span");
+    const fromLeft = index % 2 === 0;
+    const startX = fromLeft ? 12 + Math.random() * 8 : 80 + Math.random() * 8;
+    const startY = 84 + Math.random() * 5;
+    const riseX = fromLeft ? 80 + Math.random() * 90 : -80 - Math.random() * 90;
+    const peakX = fromLeft ? 120 + Math.random() * 180 : -120 - Math.random() * 180;
+    const peakY = -330 - Math.random() * 180;
+    const fallX = peakX + (fromLeft ? 20 : -20) + (-110 + Math.random() * 220);
+    const fallY = peakY + 520 + Math.random() * 260;
+    const duration = 3600 + Math.random() * 900;
+    piece.style.setProperty("--rise-x", `${riseX}px`);
+    piece.style.setProperty("--rise-y", `${peakY * 0.58}px`);
+    piece.style.setProperty("--peak-x", `${peakX}px`);
+    piece.style.setProperty("--peak-y", `${peakY}px`);
+    piece.style.setProperty("--fall-x", `${fallX}px`);
+    piece.style.setProperty("--fall-y", `${fallY}px`);
+    piece.style.setProperty("--r", `${Math.random() * 760 + 360}deg`);
+    piece.style.setProperty("--c", colors[index % colors.length]);
+    piece.style.left = `${startX}%`;
+    piece.style.top = `${startY}%`;
+    piece.style.animationDuration = `${duration}ms`;
+    piece.style.animationDelay = `${Math.random() * 220}ms`;
+    container.appendChild(piece);
+  });
+  window.setTimeout(() => container.replaceChildren(), 5200);
+}
 
 function loadState() {
   try {
@@ -89,13 +179,19 @@ function getPeriodByHour(hour) {
   return "night";
 }
 
+function getActivePeriodByHour(hour) {
+  const period = getPeriodByHour(hour);
+  if (Number(state.brushCount) < 3 && period === "noon") return "night";
+  return period;
+}
+
 function getPeriodLabel(period = state.reminderPeriod) {
   return { morning: "早间", noon: "午间", night: "晚间" }[period] || "早间";
 }
 
 function getRecordPeriodLabel(time = "") {
   const hour = Number(String(time).split(":")[0]);
-  const period = getPeriodByHour(Number.isFinite(hour) ? hour : new Date().getHours());
+  const period = getActivePeriodByHour(Number.isFinite(hour) ? hour : new Date().getHours());
   return { morning: "早间", noon: "午间", night: "晚间" }[period] || "早间";
 }
 
@@ -151,7 +247,10 @@ function formatSeconds(value) {
 }
 
 function todayKey(date = new Date()) {
-  return date.toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function renderTodayText() {
@@ -208,13 +307,28 @@ function renderTimer() {
   const idle = !timer.running && !timer.done && info.elapsed <= 0.1;
 
   $("#timeLeft").textContent = formatSeconds(info.elapsed);
-  $("#stepTimeLeft").textContent = `${getPeriodLabel(getPeriodByHour(new Date().getHours()))}打卡`;
+  $("#stepTimeLeft").textContent = `${getPeriodLabel(getActivePeriodByHour(new Date().getHours()))}打卡`;
   $("#stepIndex").textContent = `第 ${info.stepIndex + 1} / ${orderedSteps.length} 步`;
-  $("#stepTitle").textContent = step.title;
+  $("#stepTitle").textContent = `${step.title} ${Math.round(getStepDuration(step))}s`;
   $("#stepHint").textContent = step.hint;
   const ring = $(".timer-ring");
   $(".timer-value").setAttribute("d", getProgressArcPath(progress));
   ring.classList.toggle("no-progress", progress <= 0.1 && !timer.running);
+  if (timer.running && info.stepIndex !== timer.lastStepIndex) {
+    timer.lastStepIndex = info.stepIndex;
+    timer.lastCountdownKey = "";
+    playUiSound("step");
+    restartAnimation(ring, "step-pulse");
+    restartAnimation($(".timer-copy"), "step-change");
+  }
+  if (timer.running && info.stepRemaining > 0 && info.stepRemaining <= 3.2) {
+    const countdownSecond = Math.ceil(info.stepRemaining);
+    const countdownKey = `${info.stepIndex}:${countdownSecond}`;
+    if (countdownSecond >= 1 && countdownSecond <= 3 && timer.lastCountdownKey !== countdownKey) {
+      timer.lastCountdownKey = countdownKey;
+      playUiSound("countdown");
+    }
+  }
   $("#highlightZone").setAttribute("d", step.zone);
   $("#brushSvg").style.transform = step.brush;
   $("#brushSvg").style.animationPlayState = timer.running ? "running" : "paused";
@@ -242,9 +356,15 @@ function renderSteps() {
 function startTimer() {
   if (timer.done) resetTimer(false);
   if (timer.running) return;
+  getAudioContext();
+  playUiSound("start");
   timer.running = true;
   timer.startedAt = Date.now();
+  timer.lastStepIndex = getTimerInfo().stepIndex;
+  timer.lastCountdownKey = "";
   $("#startButton").disabled = true;
+  restartAnimation($(".timer-ring"), "start-pulse");
+  restartAnimation($("#startButton"), "button-press");
   timer.interval = setInterval(renderTimer, 250);
   renderTimer();
 }
@@ -254,6 +374,8 @@ function resetTimer(showToast = true) {
   timer.done = false;
   timer.startedAt = null;
   timer.elapsed = 0;
+  timer.lastStepIndex = 0;
+  timer.lastCountdownKey = "";
   clearInterval(timer.interval);
   $("#startButton").disabled = false;
   $("#startButton span").textContent = "开始刷牙";
@@ -268,6 +390,10 @@ function completeTimer() {
   clearInterval(timer.interval);
   $("#startButton").disabled = false;
   $("#startButton span").textContent = "再刷一次";
+  playUiSound("complete");
+  restartAnimation($(".timer-ring"), "complete-pop");
+  restartAnimation($(".timer-copy"), "step-change");
+  launchConfetti();
   addRecord();
   renderAll();
   toast("刷牙完成");
@@ -409,6 +535,7 @@ function bindControls() {
   $$("input[name='brushCount']").forEach((input) => {
     input.addEventListener("change", () => {
       state.brushCount = Number(input.value);
+      if (state.brushCount < 3 && state.reminderPeriod === "noon") state.reminderPeriod = "night";
       saveState();
       renderAll();
     });

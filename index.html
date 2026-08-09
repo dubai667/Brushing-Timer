@@ -10,7 +10,7 @@
     <title>刷牙计时</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=88" />
+    <link rel="stylesheet" href="./styles.css?v=97" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -73,7 +73,7 @@
           </div>
           <div class="timer-copy">
             <p id="stepIndex">第 1 / 7 步</p>
-            <h1 id="stepTitle">上排外侧</h1>
+            <h1 id="stepTitle">上排外侧 20s</h1>
             <p id="stepHint">牙刷轻轻打圈，照顾到牙龈边缘。</p>
           </div>
         </section>
@@ -203,7 +203,8 @@
     </nav>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./script.js?v=88"></script>
+    <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
+    <script src="./script.js?v=97"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
