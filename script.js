@@ -319,8 +319,8 @@ function renderOrderList() {
             <small>${Math.round(getStepDuration(step))} 秒</small>
           </div>
           <div class="order-actions">
-            <button type="button" data-move="up" aria-label="${step.title}上移" ${index === 0 ? "disabled" : ""}>上</button>
-            <button type="button" data-move="down" aria-label="${step.title}下移" ${index === orderedSteps.length - 1 ? "disabled" : ""}>下</button>
+            <button type="button" data-move="up" aria-label="${step.title}上移" ${index === 0 ? "disabled" : ""}><svg><use href="#icon-up"></use></svg></button>
+            <button type="button" data-move="down" aria-label="${step.title}下移" ${index === orderedSteps.length - 1 ? "disabled" : ""}><svg><use href="#icon-down"></use></svg></button>
           </div>
         </article>
       `,

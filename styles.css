@@ -20,6 +20,12 @@
 html, body {
   min-height: 100%;
   overflow-x: hidden;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -670,12 +676,22 @@ input:focus, select:focus {
 .order-actions button {
   width: 34px;
   min-height: 32px;
+  display: grid;
+  place-items: center;
   border: 0;
   border-radius: 999px;
   background: rgba(102, 189, 88, 0.18);
   color: var(--accent-dark);
-  font-size: 12px;
-  font-weight: 900;
+}
+
+.order-actions svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .order-actions button:disabled {
