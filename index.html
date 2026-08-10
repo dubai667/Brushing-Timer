@@ -10,7 +10,7 @@
     <title>刷牙计时</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=97" />
+    <link rel="stylesheet" href="./styles.css?v=100" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -110,6 +110,18 @@
 
       <section class="view mine-view" data-view="mine">
         <section class="panel">
+          <div class="setting-group sync-group">
+            <button class="account-card" id="syncOpenButton" type="button">
+              <span class="account-avatar" id="syncAvatar">未</span>
+              <span class="account-info">
+                <strong id="syncNickname">未登录</strong>
+                <small id="syncStatus">登录后自动云同步</small>
+              </span>
+              <span class="account-action" id="syncActionText">去登录</span>
+              <svg class="account-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
+          </div>
+
           <div class="setting-group setting-row">
             <h3>刷牙次数</h3>
             <div class="radio-list radio-list-inline" id="brushCountOptions">
@@ -203,8 +215,25 @@
     </nav>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="dialog-backdrop" id="syncDialog" hidden>
+      <section class="sync-dialog" role="dialog" aria-modal="true" aria-labelledby="syncDialogTitle">
+        <button class="dialog-close" id="syncDialogClose" type="button" aria-label="关闭">×</button>
+        <h2 id="syncDialogTitle">邮箱登录</h2>
+        <p id="syncDialogDesc">登录后，刷牙记录会自动同步到云端。</p>
+        <div class="sync-box" id="syncBox">
+          <input class="sync-email" id="syncEmail" type="email" inputmode="email" autocomplete="email" placeholder="输入邮箱" />
+          <input class="sync-email sync-code" id="syncCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="输入邮箱验证码" hidden />
+          <button class="sync-button" id="syncCodeButton" type="button">获取验证码</button>
+          <button class="sync-button" id="syncLoginButton" type="button" hidden>登录并同步</button>
+          <button class="sync-button sync-button-light" id="syncNowButton" type="button" hidden>立即同步</button>
+          <button class="sync-button sync-button-light" id="syncLogoutButton" type="button" hidden>退出登录</button>
+          <p class="sync-message" id="syncMessage"></p>
+        </div>
+      </section>
+    </div>
     <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
-    <script src="./script.js?v=97"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./script.js?v=106"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {

@@ -1,4 +1,6 @@
 const STORAGE_KEY = "toothTimer:v1";
+const SUPABASE_URL = "https://dtleozvtroankpuviytl.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oRImKCE4ba_xHQgz-Q09cw_NnBrAyi1";
 
 const steps = [
   { id: "upperOuter", title: "上排外侧", duration: 20, hint: "牙刷轻轻打圈，照顾到牙龈边缘。", zone: "M83 113c15-12 38-13 58-4", brush: "translate(0 0)" },
@@ -54,9 +56,28 @@ let timer = {
   lastCountdownKey: "",
 };
 let audioContext = null;
+let supabaseClient = null;
+let currentUser = null;
+let syncBusy = false;
+let otpEmail = "";
+let otpCooldown = 0;
+let otpCooldownTimer = null;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+function getSupabaseClient() {
+  if (!window.supabase?.createClient) return null;
+  if (!supabaseClient) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    });
+  }
+  return supabaseClient;
+}
 
 function getAudioContext() {
   const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -173,6 +194,14 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+function getRecordPeriod(record) {
+  return record.period || getRecordPeriodLabel(record.time);
+}
+
+function recordSignature(record) {
+  return [record.date, record.time, record.duration, getRecordPeriod(record)].join("|");
+}
+
 function getPeriodByHour(hour) {
   if (hour >= 1 && hour < 12) return "morning";
   if (hour < 17) return "noon";
@@ -210,11 +239,11 @@ function notifyBrushReminder(period) {
 function checkReminders() {
   const now = new Date();
   const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  const today = todayKey(now);
+  const sessionDate = sessionDateKey(now);
   Object.entries(state.reminderTimes || {}).forEach(([period, reminderTime]) => {
     if (Number(state.brushCount) < 3 && period === "noon") return;
     if (reminderTime !== currentTime) return;
-    const reminderKey = `${today}:${period}:${reminderTime}`;
+    const reminderKey = `${sessionDate}:${period}:${reminderTime}`;
     if (reminderKey === lastReminderKey) return;
     lastReminderKey = reminderKey;
     localStorage.setItem("toothTimer:lastReminder", reminderKey);
@@ -251,6 +280,12 @@ function todayKey(date = new Date()) {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function sessionDateKey(date = new Date()) {
+  const sessionDate = new Date(date);
+  if (sessionDate.getHours() < 1) sessionDate.setDate(sessionDate.getDate() - 1);
+  return todayKey(sessionDate);
 }
 
 function renderTodayText() {
@@ -402,20 +437,23 @@ function completeTimer() {
 
 function addRecord() {
   const now = new Date();
-  state.records.unshift({
+  const record = {
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-    date: todayKey(now),
+    date: sessionDateKey(now),
     time: new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit" }).format(now),
     duration: totalDuration(),
-  });
+    period: getActivePeriodByHour(now.getHours()),
+  };
+  state.records.unshift(record);
   state.records = state.records.slice(0, 90);
   saveState();
+  syncRecordToCloud(record);
 }
 
 function getStreak() {
   const days = new Set((state.records || []).map((record) => record.date));
   let count = 0;
-  const cursor = new Date();
+  const cursor = new Date(sessionDateKey());
   while (days.has(todayKey(cursor))) {
     count += 1;
     cursor.setDate(cursor.getDate() - 1);
@@ -437,7 +475,7 @@ function renderRecords() {
               </div>
               <div class="record-meta">
                 <span>${record.time}</span>
-                <span class="record-period">${getRecordPeriodLabel(record.time)}</span>
+                <span class="record-period">${getRecordPeriod(record)}</span>
               </div>
             </article>
           `,
@@ -495,6 +533,69 @@ function renderSettings() {
     row.hidden = Number(state.brushCount) < 3;
   });
   renderOrderList();
+  renderSyncUi();
+}
+
+function renderSyncUi() {
+  const status = $("#syncStatus");
+  const avatar = $("#syncAvatar");
+  const nickname = $("#syncNickname");
+  const actionText = $("#syncActionText");
+  const email = $("#syncEmail");
+  const code = $("#syncCode");
+  const codeButton = $("#syncCodeButton");
+  const loginButton = $("#syncLoginButton");
+  const syncButton = $("#syncNowButton");
+  const logoutButton = $("#syncLogoutButton");
+  if (!status || !avatar || !nickname || !actionText || !email || !code || !codeButton || !loginButton || !syncButton || !logoutButton) return;
+  const signedIn = Boolean(currentUser);
+  const userEmail = currentUser?.email || "";
+  const name = userEmail ? userEmail.split("@")[0] : "未登录";
+  avatar.textContent = signedIn ? name.slice(0, 1).toUpperCase() : "未";
+  nickname.textContent = signedIn ? name : "未登录";
+  status.textContent = syncBusy ? "同步中" : signedIn ? userEmail : "登录后自动云同步";
+  actionText.textContent = signedIn ? "管理" : "去登录";
+  email.hidden = signedIn;
+  code.hidden = signedIn || !otpEmail;
+  codeButton.hidden = signedIn;
+  loginButton.hidden = signedIn || !otpEmail;
+  syncButton.hidden = !signedIn;
+  logoutButton.hidden = !signedIn;
+  codeButton.textContent = otpCooldown > 0 ? `${otpCooldown}秒后重试` : "获取验证码";
+  codeButton.disabled = syncBusy || otpCooldown > 0;
+  loginButton.disabled = syncBusy;
+  syncButton.disabled = syncBusy;
+  logoutButton.disabled = syncBusy;
+}
+
+function setSyncMessage(message = "") {
+  const messageEl = $("#syncMessage");
+  if (messageEl) messageEl.textContent = message;
+}
+
+function openSyncDialog() {
+  $("#syncDialog")?.removeAttribute("hidden");
+  setSyncMessage(currentUser ? "当前账号已开启云同步。" : "");
+}
+
+function closeSyncDialog() {
+  $("#syncDialog")?.setAttribute("hidden", "");
+}
+
+function startOtpCooldown(seconds = 60) {
+  otpCooldown = Math.max(1, Math.ceil(seconds));
+  clearInterval(otpCooldownTimer);
+  renderSyncUi();
+  otpCooldownTimer = window.setInterval(() => {
+    otpCooldown = Math.max(0, otpCooldown - 1);
+    if (otpCooldown <= 0) clearInterval(otpCooldownTimer);
+    renderSyncUi();
+  }, 1000);
+}
+
+function getOtpCooldownSeconds(message = "") {
+  const match = String(message).match(/after\s+(\d+)\s+seconds?/i);
+  return match ? Number(match[1]) : 0;
 }
 
 function renderOrderList() {
@@ -584,6 +685,199 @@ function bindControls() {
     renderAll();
   });
 
+  $("#syncCodeButton")?.addEventListener("click", requestSyncCode);
+  $("#syncLoginButton")?.addEventListener("click", verifySyncCode);
+  $("#syncNowButton")?.addEventListener("click", syncCloudRecords);
+  $("#syncLogoutButton")?.addEventListener("click", signOutSync);
+  $("#syncOpenButton")?.addEventListener("click", openSyncDialog);
+  $("#syncDialogClose")?.addEventListener("click", closeSyncDialog);
+  $("#syncDialog")?.addEventListener("click", (event) => {
+    if (event.target.id === "syncDialog") closeSyncDialog();
+  });
+}
+
+async function initCloudSync() {
+  const client = getSupabaseClient();
+  if (!client) {
+    renderSyncUi();
+    return;
+  }
+  const { data } = await client.auth.getSession();
+  currentUser = data.session?.user || null;
+  renderSyncUi();
+  if (currentUser) syncCloudRecords();
+  client.auth.onAuthStateChange((_event, session) => {
+    currentUser = session?.user || null;
+    renderSyncUi();
+    if (currentUser) syncCloudRecords();
+  });
+}
+
+async function requestSyncCode() {
+  const client = getSupabaseClient();
+  const email = $("#syncEmail")?.value.trim();
+  if (!client) {
+    toast("云同步加载失败，请检查网络");
+    return;
+  }
+  if (!email) {
+    toast("请输入邮箱");
+    return;
+  }
+  syncBusy = true;
+  renderSyncUi();
+  const { error } = await client.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: true,
+    },
+  });
+  syncBusy = false;
+  if (!error) {
+    otpEmail = email;
+    $("#syncCode").value = "";
+    startOtpCooldown(60);
+  }
+  renderSyncUi();
+  let message = "验证码已发送到邮箱";
+  if (error) {
+    const retrySeconds = getOtpCooldownSeconds(error.message);
+    if (retrySeconds > 0) {
+      startOtpCooldown(retrySeconds);
+      message = `验证码已发送，请 ${retrySeconds} 秒后再试`;
+    } else {
+      message = `验证码发送失败：${error.message}`;
+    }
+  }
+  setSyncMessage(message);
+  toast(message);
+}
+
+async function verifySyncCode() {
+  const client = getSupabaseClient();
+  const token = $("#syncCode")?.value.trim();
+  if (!client) {
+    toast("云同步加载失败，请检查网络");
+    return;
+  }
+  if (!otpEmail) {
+    toast("请先获取验证码");
+    return;
+  }
+  if (!token) {
+    toast("请输入验证码");
+    return;
+  }
+  syncBusy = true;
+  renderSyncUi();
+  const { data, error } = await client.auth.verifyOtp({
+    email: otpEmail,
+    token,
+    type: "email",
+  });
+  currentUser = data?.user || null;
+  otpEmail = error ? otpEmail : "";
+  syncBusy = false;
+  renderSyncUi();
+  if (error) {
+    setSyncMessage("验证码不正确或已过期");
+    toast("验证码不正确或已过期");
+    return;
+  }
+  await syncCloudRecords();
+  closeSyncDialog();
+  toast("登录成功，已同步");
+}
+
+async function signOutSync() {
+  const client = getSupabaseClient();
+  if (!client) return;
+  syncBusy = true;
+  renderSyncUi();
+  await client.auth.signOut();
+  currentUser = null;
+  otpEmail = "";
+  syncBusy = false;
+  renderSyncUi();
+  closeSyncDialog();
+  toast("已退出云同步");
+}
+
+async function syncRecordToCloud(record) {
+  if (!currentUser) return;
+  const client = getSupabaseClient();
+  if (!client) return;
+  const { error } = await client.from("brush_records").insert({
+    user_id: currentUser.id,
+    date: record.date,
+    time: record.time,
+    duration: record.duration,
+    period: getRecordPeriod(record),
+  });
+  if (error) toast("云同步失败，本地已保存");
+}
+
+async function syncCloudRecords() {
+  const client = getSupabaseClient();
+  if (!client || !currentUser || syncBusy) return;
+  syncBusy = true;
+  renderSyncUi();
+
+  const { data: remoteRecords, error: readError } = await client
+    .from("brush_records")
+    .select("id,date,time,duration,period,created_at")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: false })
+    .limit(180);
+
+  if (readError) {
+    syncBusy = false;
+    renderSyncUi();
+    toast("读取云端记录失败");
+    return;
+  }
+
+  const remoteList = (remoteRecords || []).map((record) => ({
+    id: record.id,
+    date: record.date,
+    time: record.time,
+    duration: record.duration,
+    period: record.period,
+  }));
+  const remoteSignatures = new Set(remoteList.map(recordSignature));
+  const missingLocal = (state.records || []).filter((record) => !remoteSignatures.has(recordSignature(record)));
+
+  if (missingLocal.length) {
+    const inserts = missingLocal.map((record) => ({
+      user_id: currentUser.id,
+      date: record.date,
+      time: record.time,
+      duration: record.duration,
+      period: getRecordPeriod(record),
+    }));
+    const { error: writeError } = await client.from("brush_records").insert(inserts);
+    if (writeError) {
+      syncBusy = false;
+      renderSyncUi();
+      toast("上传本地记录失败");
+      return;
+    }
+  }
+
+  const merged = [...remoteList, ...missingLocal];
+  const seen = new Set();
+  state.records = merged
+    .filter((record) => {
+      const signature = recordSignature(record);
+      if (seen.has(signature)) return false;
+      seen.add(signature);
+      return true;
+    })
+    .slice(0, 90);
+  saveState();
+  syncBusy = false;
+  renderAll();
+  toast("云同步完成");
 }
 
 function toast(message) {
@@ -597,5 +891,6 @@ function toast(message) {
 bindTabs();
 bindControls();
 renderAll();
+initCloudSync();
 checkReminders();
 setInterval(checkReminders, 30 * 1000);
