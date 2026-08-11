@@ -204,7 +204,7 @@ function recordSignature(record) {
 
 function getPeriodByHour(hour) {
   if (hour >= 1 && hour < 12) return "morning";
-  if (hour < 17) return "noon";
+  if (hour >= 12 && hour < 17) return "noon";
   return "night";
 }
 
