@@ -60,7 +60,6 @@ let audioContext = null;
 let supabaseClient = null;
 let currentUser = null;
 let syncBusy = false;
-let otpEmail = "";
 let otpCooldown = 0;
 let otpCooldownTimer = null;
 
@@ -543,12 +542,10 @@ function renderSyncUi() {
   const nickname = $("#syncNickname");
   const actionText = $("#syncActionText");
   const email = $("#syncEmail");
-  const code = $("#syncCode");
   const codeButton = $("#syncCodeButton");
-  const loginButton = $("#syncLoginButton");
   const syncButton = $("#syncNowButton");
   const logoutButton = $("#syncLogoutButton");
-  if (!status || !avatar || !nickname || !actionText || !email || !code || !codeButton || !loginButton || !syncButton || !logoutButton) return;
+  if (!status || !avatar || !nickname || !actionText || !email || !codeButton || !syncButton || !logoutButton) return;
   const signedIn = Boolean(currentUser);
   const userEmail = currentUser?.email || "";
   const name = userEmail ? userEmail.split("@")[0] : "未登录";
@@ -557,14 +554,11 @@ function renderSyncUi() {
   status.textContent = syncBusy ? "同步中" : signedIn ? userEmail : "登录后自动云同步";
   actionText.textContent = signedIn ? "管理" : "去登录";
   email.hidden = signedIn;
-  code.hidden = signedIn || !otpEmail;
   codeButton.hidden = signedIn;
-  loginButton.hidden = signedIn || !otpEmail;
   syncButton.hidden = !signedIn;
   logoutButton.hidden = !signedIn;
-  codeButton.textContent = otpCooldown > 0 ? `${otpCooldown}秒后重试` : "获取验证码";
+  codeButton.textContent = otpCooldown > 0 ? `${otpCooldown}秒后重试` : "查看邮箱登录";
   codeButton.disabled = syncBusy || otpCooldown > 0;
-  loginButton.disabled = syncBusy;
   syncButton.disabled = syncBusy;
   logoutButton.disabled = syncBusy;
 }
@@ -687,7 +681,6 @@ function bindControls() {
   });
 
   $("#syncCodeButton")?.addEventListener("click", requestSyncCode);
-  $("#syncLoginButton")?.addEventListener("click", verifySyncCode);
   $("#syncNowButton")?.addEventListener("click", syncCloudRecords);
   $("#syncLogoutButton")?.addEventListener("click", signOutSync);
   $("#syncOpenButton")?.addEventListener("click", openSyncDialog);
@@ -736,59 +729,21 @@ async function requestSyncCode() {
   });
   syncBusy = false;
   if (!error) {
-    otpEmail = email;
-    $("#syncCode").value = "";
     startOtpCooldown(60);
   }
   renderSyncUi();
-  let message = "验证码已发送到邮箱";
+  let message = "登录链接已发送，请打开邮箱完成登录";
   if (error) {
     const retrySeconds = getOtpCooldownSeconds(error.message);
     if (retrySeconds > 0) {
       startOtpCooldown(retrySeconds);
-      message = `验证码已发送，请 ${retrySeconds} 秒后再试`;
+      message = `登录链接已发送，请 ${retrySeconds} 秒后再试`;
     } else {
-      message = `验证码发送失败：${error.message}`;
+      message = `登录链接发送失败：${error.message}`;
     }
   }
   setSyncMessage(message);
   toast(message);
-}
-
-async function verifySyncCode() {
-  const client = getSupabaseClient();
-  const token = $("#syncCode")?.value.trim();
-  if (!client) {
-    toast("云同步加载失败，请检查网络");
-    return;
-  }
-  if (!otpEmail) {
-    toast("请先获取验证码");
-    return;
-  }
-  if (!token) {
-    toast("请输入验证码");
-    return;
-  }
-  syncBusy = true;
-  renderSyncUi();
-  const { data, error } = await client.auth.verifyOtp({
-    email: otpEmail,
-    token,
-    type: "email",
-  });
-  currentUser = data?.user || null;
-  otpEmail = error ? otpEmail : "";
-  syncBusy = false;
-  renderSyncUi();
-  if (error) {
-    setSyncMessage("验证码不正确或已过期");
-    toast("验证码不正确或已过期");
-    return;
-  }
-  await syncCloudRecords();
-  closeSyncDialog();
-  toast("登录成功，已同步");
 }
 
 async function signOutSync() {
@@ -798,7 +753,6 @@ async function signOutSync() {
   renderSyncUi();
   await client.auth.signOut();
   currentUser = null;
-  otpEmail = "";
   syncBusy = false;
   renderSyncUi();
   closeSyncDialog();
