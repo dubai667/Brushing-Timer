@@ -197,11 +197,18 @@ function saveState() {
 }
 
 function getRecordPeriod(record) {
-  return record.period || getRecordPeriodLabel(record.time);
+  if (record.period) return getPeriodLabel(record.period);
+  return getRecordPeriodLabel(record.time);
+}
+
+function getRecordPeriodValue(record) {
+  if (["morning", "noon", "night"].includes(record.period)) return record.period;
+  const hour = Number(String(record.time || "").split(":")[0]);
+  return getActivePeriodByHour(Number.isFinite(hour) ? hour : new Date().getHours());
 }
 
 function recordSignature(record) {
-  return [record.date, record.time, record.duration, getRecordPeriod(record)].join("|");
+  return [record.date, record.time, record.duration, getRecordPeriodValue(record)].join("|");
 }
 
 function getPeriodByHour(hour) {
@@ -770,7 +777,7 @@ async function syncRecordToCloud(record) {
     date: record.date,
     time: record.time,
     duration: record.duration,
-    period: getRecordPeriod(record),
+    period: getRecordPeriodValue(record),
   });
   if (error) toast("云同步失败，本地已保存");
 }
@@ -811,7 +818,7 @@ async function syncCloudRecords() {
       date: record.date,
       time: record.time,
       duration: record.duration,
-      period: getRecordPeriod(record),
+      period: getRecordPeriodValue(record),
     }));
     const { error: writeError } = await client.from("brush_records").insert(inserts);
     if (writeError) {
