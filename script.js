@@ -1,6 +1,7 @@
 const STORAGE_KEY = "toothTimer:v1";
 const SUPABASE_URL = "https://dtleozvtroankpuviytl.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oRImKCE4ba_xHQgz-Q09cw_NnBrAyi1";
+const AUTH_REDIRECT_URL = "https://dubai667.github.io/Brushing-Timer/";
 
 const steps = [
   { id: "upperOuter", title: "上排外侧", duration: 20, hint: "牙刷轻轻打圈，照顾到牙龈边缘。", zone: "M83 113c15-12 38-13 58-4", brush: "translate(0 0)" },
@@ -729,6 +730,7 @@ async function requestSyncCode() {
   const { error } = await client.auth.signInWithOtp({
     email,
     options: {
+      emailRedirectTo: AUTH_REDIRECT_URL,
       shouldCreateUser: true,
     },
   });
