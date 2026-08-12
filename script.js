@@ -229,6 +229,10 @@ function getPeriodLabel(period = state.reminderPeriod) {
   return { morning: "早间", noon: "午间", night: "晚间" }[period] || "早间";
 }
 
+function getExpectedPeriods() {
+  return Number(state.brushCount) >= 3 ? ["morning", "noon", "night"] : ["morning", "night"];
+}
+
 function getRecordPeriodLabel(time = "") {
   const hour = Number(String(time).split(":")[0]);
   const period = getActivePeriodByHour(Number.isFinite(hour) ? hour : new Date().getHours());
@@ -504,25 +508,35 @@ function renderCalendar() {
   const firstDay = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const offset = firstDay.getDay();
-  const recordDays = new Set(
-    (state.records || [])
-      .filter((record) => {
-        const [recordYear, recordMonth] = record.date.split("-").map(Number);
-        return recordYear === year && recordMonth === month + 1;
-      })
-      .map((record) => Number(record.date.slice(-2))),
-  );
+  const expectedPeriods = getExpectedPeriods();
+  const recordDayPeriods = new Map();
+  (state.records || []).forEach((record) => {
+    const [recordYear, recordMonth] = record.date.split("-").map(Number);
+    if (recordYear !== year || recordMonth !== month + 1) return;
+    const day = Number(record.date.slice(-2));
+    if (!recordDayPeriods.has(day)) recordDayPeriods.set(day, new Set());
+    recordDayPeriods.get(day).add(getRecordPeriodValue(record));
+  });
   const cells = [];
   for (let i = 0; i < offset; i += 1) cells.push(`<span class="calendar-day muted"></span>`);
   for (let day = 1; day <= daysInMonth; day += 1) {
-    const done = recordDays.has(day);
+    const dayPeriods = recordDayPeriods.get(day) || new Set();
+    const done = expectedPeriods.every((period) => dayPeriods.has(period));
     const today = day === now.getDate();
-    cells.push(`<span class="calendar-day${done ? " done" : ""}${today ? " today" : ""}">${day}</span>`);
+    const dots = expectedPeriods
+      .map((period) => `<i class="calendar-dot${dayPeriods.has(period) ? " done" : ""}" aria-label="${getPeriodLabel(period)}${dayPeriods.has(period) ? "已打卡" : "未打卡"}"></i>`)
+      .join("");
+    cells.push(`
+      <span class="calendar-day${done ? " done" : ""}${today ? " today" : ""}">
+        <b>${day}</b>
+        <em>${dots}</em>
+      </span>
+    `);
   }
   calendar.innerHTML = `
     <div class="calendar-head">
       <strong>${year}年${month + 1}月</strong>
-      <span>完成 ${recordDays.size} 天</span>
+      <span>完成 ${[...recordDayPeriods.values()].filter((periods) => expectedPeriods.every((period) => periods.has(period))).length} 天</span>
     </div>
     <div class="calendar-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
     <div class="calendar-grid">${cells.join("")}</div>
