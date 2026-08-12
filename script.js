@@ -89,13 +89,13 @@ function getAudioContext() {
   return audioContext;
 }
 
-function playTone(frequency, duration = 0.12, volume = 0.035, delay = 0) {
+function playTone(frequency, duration = 0.12, volume = 0.07, delay = 0, type = "sine") {
   const context = getAudioContext();
   if (!context) return;
   const start = context.currentTime + delay;
   const oscillator = context.createOscillator();
   const gain = context.createGain();
-  oscillator.type = "sine";
+  oscillator.type = type;
   oscillator.frequency.setValueAtTime(frequency, start);
   gain.gain.setValueAtTime(0.0001, start);
   gain.gain.exponentialRampToValueAtTime(volume, start + 0.015);
@@ -108,23 +108,25 @@ function playTone(frequency, duration = 0.12, volume = 0.035, delay = 0) {
 
 function playUiSound(type) {
   if (type === "start") {
-    playTone(660, 0.1, 0.05);
-    playTone(880, 0.11, 0.046, 0.08);
+    playTone(660, 0.12, 0.09);
+    playTone(880, 0.14, 0.085, 0.09);
     return;
   }
   if (type === "step") {
-    playTone(740, 0.09, 0.044);
+    playTone(720, 0.12, 0.095, 0, "triangle");
+    playTone(960, 0.14, 0.09, 0.11, "triangle");
     return;
   }
   if (type === "countdown") {
-    playTone(520, 0.055, 0.034);
+    playTone(520, 0.095, 0.105, 0, "square");
     return;
   }
   if (type === "complete") {
-    playTone(620, 0.18, 0.07);
-    playTone(780, 0.2, 0.07, 0.14);
-    playTone(980, 0.22, 0.065, 0.3);
-    playTone(1240, 0.28, 0.06, 0.48);
+    playTone(620, 0.22, 0.105, 0, "triangle");
+    playTone(780, 0.24, 0.11, 0.16, "triangle");
+    playTone(980, 0.28, 0.105, 0.34, "triangle");
+    playTone(1240, 0.34, 0.1, 0.56, "triangle");
+    playTone(1560, 0.42, 0.085, 0.82, "sine");
   }
 }
 
