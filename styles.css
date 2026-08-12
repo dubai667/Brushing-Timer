@@ -642,9 +642,12 @@ svg * { vector-effect: non-scaling-stroke; }
 
 .calendar-day {
   display: grid;
+  grid-template-rows: 18px 6px;
+  gap: 2px;
   width: 34px;
   min-height: 34px;
   justify-self: center;
+  align-content: center;
   place-items: center;
   border-radius: 50%;
   color: var(--muted);
@@ -652,13 +655,38 @@ svg * { vector-effect: non-scaling-stroke; }
   font-weight: 900;
 }
 
+.calendar-day b {
+  font: inherit;
+  line-height: 18px;
+}
+
+.calendar-day em {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 6px;
+  font-style: normal;
+}
+
+.calendar-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #f0a33b;
+}
+
+.calendar-dot.done {
+  background: var(--accent);
+}
+
 .calendar-day.today {
   outline: 1px solid rgba(72, 166, 70, 0.32);
 }
 
 .calendar-day.done {
-  background: var(--accent);
-  color: #fff;
+  background: rgba(72, 166, 70, 0.1);
+  color: var(--accent-dark);
 }
 
 .calendar-day.muted {
