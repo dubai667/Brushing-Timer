@@ -789,6 +789,14 @@ input:focus, select:focus {
   background: #fffef8;
 }
 
+.settings-banner {
+  display: block;
+  width: calc(100% + 36px);
+  aspect-ratio: 16 / 9;
+  margin: -18px -18px 16px;
+  object-fit: cover;
+}
+
 .setting-group {
   margin-bottom: 26px;
 }
