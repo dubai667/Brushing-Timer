@@ -62,6 +62,7 @@ let currentUser = null;
 let syncBusy = false;
 let otpCooldown = 0;
 let otpCooldownTimer = null;
+let wakeLock = null;
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -87,6 +88,29 @@ function getAudioContext() {
   if (!audioContext) audioContext = new AudioContextClass();
   if (audioContext.state === "suspended") audioContext.resume();
   return audioContext;
+}
+
+async function requestWakeLock() {
+  if (!("wakeLock" in navigator) || wakeLock) return;
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+    wakeLock.addEventListener("release", () => {
+      wakeLock = null;
+    });
+  } catch {
+    wakeLock = null;
+  }
+}
+
+async function releaseWakeLock() {
+  if (!wakeLock) return;
+  const lock = wakeLock;
+  wakeLock = null;
+  try {
+    await lock.release();
+  } catch {
+    // The lock may already have been released by the browser.
+  }
 }
 
 function playTone(frequency, duration = 0.12, volume = 0.07, delay = 0, type = "sine") {
@@ -407,6 +431,7 @@ function startTimer() {
   if (timer.done) resetTimer(false);
   if (timer.running) return;
   getAudioContext();
+  requestWakeLock();
   playUiSound("start");
   timer.running = true;
   timer.startedAt = Date.now();
@@ -427,6 +452,7 @@ function resetTimer(showToast = true) {
   timer.lastStepIndex = 0;
   timer.lastCountdownKey = "";
   clearInterval(timer.interval);
+  releaseWakeLock();
   $("#startButton").disabled = false;
   $("#startButton span").textContent = "开始刷牙";
   renderTimer();
@@ -438,6 +464,7 @@ function completeTimer() {
   timer.running = false;
   timer.done = true;
   clearInterval(timer.interval);
+  releaseWakeLock();
   $("#startButton").disabled = false;
   $("#startButton span").textContent = "再刷一次";
   playUiSound("complete");
@@ -871,6 +898,9 @@ function toast(message) {
 
 bindTabs();
 bindControls();
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && timer.running) requestWakeLock();
+});
 renderAll();
 initCloudSync();
 checkReminders();
