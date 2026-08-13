@@ -572,7 +572,6 @@ function renderCalendar() {
   calendar.innerHTML = `
     <div class="calendar-head">
       <strong>${year}年${month + 1}月</strong>
-      <span>完成 ${[...recordDayPeriods.values()].filter((periods) => expectedPeriods.every((period) => periods.has(period))).length} 天</span>
     </div>
     <div class="calendar-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
     <div class="calendar-grid">${cells.join("")}</div>
