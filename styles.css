@@ -560,7 +560,7 @@ svg * { vector-effect: non-scaling-stroke; }
 
 .stats-panel small {
   color: rgba(23, 53, 31, 0.5);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
 }
 
