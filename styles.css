@@ -1347,41 +1347,43 @@ input:focus, select:focus {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   width: min(100vw, 480px);
-  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(72, 166, 70, 0.14);
+  padding: 8px 14px calc(8px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(72, 166, 70, 0.1);
   border-radius: 0;
-  background: rgba(255, 254, 245, 0.96);
-  backdrop-filter: blur(18px);
+  background: rgba(255, 254, 245, 0.94);
+  backdrop-filter: blur(20px);
   transform: translateX(-50%);
   box-shadow: none;
 }
 
 .bottom-nav button {
   display: grid;
-  min-height: 52px;
+  min-height: 54px;
   justify-items: center;
-  gap: 3px;
+  align-content: center;
+  gap: 2px;
   border: 0;
-  border-radius: 14px;
+  border-radius: 18px;
   background: transparent;
-  color: #8aa17b;
+  color: rgba(46, 93, 52, 0.52);
   font-size: 11px;
-  font-weight: 800;
-  transition: color 180ms ease, transform 180ms ease;
+  font-weight: 700;
+  letter-spacing: 0;
+  transition: color 180ms ease, transform 180ms ease, background 180ms ease;
 }
 
 .bottom-nav button span {
   display: grid;
-  width: 32px;
+  width: 36px;
   height: 32px;
   place-items: center;
-  border-radius: 50%;
+  border-radius: 999px;
   transition: background 180ms ease, transform 180ms ease;
 }
 
 .bottom-nav svg {
-  width: 23px;
-  height: 23px;
+  width: 22px;
+  height: 22px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -1391,15 +1393,17 @@ input:focus, select:focus {
 
 .bottom-nav button.active {
   color: var(--accent);
+  font-weight: 800;
 }
 
 .bottom-nav button.active span {
-  background: rgba(72, 166, 70, 0.13);
-  transform: translateY(-1px);
+  background: linear-gradient(180deg, rgba(231, 247, 207, 0.96), rgba(205, 236, 169, 0.72));
+  box-shadow: inset 0 0 0 1px rgba(72, 166, 70, 0.08);
+  transform: translateY(-2px);
 }
 
 .bottom-nav button:active {
-  transform: scale(0.96);
+  transform: scale(0.97);
 }
 
 .toast {
