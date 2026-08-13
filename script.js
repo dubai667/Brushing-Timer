@@ -537,6 +537,11 @@ function renderCalendar() {
   const offset = firstDay.getDay();
   const expectedPeriods = getExpectedPeriods();
   const recordDayPeriods = new Map();
+  const firstRecordDate = (state.records || [])
+    .map((record) => record.date)
+    .filter(Boolean)
+    .sort()[0];
+  const currentSessionDate = sessionDateKey(now);
   (state.records || []).forEach((record) => {
     const [recordYear, recordMonth] = record.date.split("-").map(Number);
     if (recordYear !== year || recordMonth !== month + 1) return;
@@ -550,9 +555,13 @@ function renderCalendar() {
     const dayPeriods = recordDayPeriods.get(day) || new Set();
     const done = expectedPeriods.every((period) => dayPeriods.has(period));
     const today = day === now.getDate();
-    const dots = expectedPeriods
-      .map((period) => `<i class="calendar-dot${dayPeriods.has(period) ? " done" : ""}" aria-label="${getPeriodLabel(period)}${dayPeriods.has(period) ? "已打卡" : "未打卡"}"></i>`)
-      .join("");
+    const dayKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const shouldShowDots = firstRecordDate && dayKey >= firstRecordDate && dayKey <= currentSessionDate;
+    const dots = shouldShowDots
+      ? expectedPeriods
+          .map((period) => `<i class="calendar-dot${dayPeriods.has(period) ? " done" : ""}" aria-label="${getPeriodLabel(period)}${dayPeriods.has(period) ? "已打卡" : "未打卡"}"></i>`)
+          .join("")
+      : "";
     cells.push(`
       <span class="calendar-day${done ? " done" : ""}${today ? " today" : ""}">
         <b>${day}</b>
