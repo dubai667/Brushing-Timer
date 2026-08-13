@@ -1,9 +1,9 @@
-const CACHE_NAME = "brushing-timer-v2026-08-13-20";
+const CACHE_NAME = "brushing-timer-v2026-08-13-21";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css?v=100",
-  "./script.js?v=113",
+  "./script.js?v=114",
   "./manifest.json",
   "./icon.svg",
   "./assets/checkin-banner.png",
