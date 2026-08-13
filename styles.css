@@ -1366,7 +1366,7 @@ input:focus, select:focus {
   border-radius: 18px;
   background: transparent;
   color: rgba(46, 93, 52, 0.52);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0;
   transition: color 180ms ease, transform 180ms ease, background 180ms ease;
