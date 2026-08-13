@@ -10,13 +10,13 @@
     <title>刷牙计时</title>
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=102" />
+    <link rel="stylesheet" href="./styles.css?v=103" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
-      <symbol id="icon-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></symbol>
-      <symbol id="icon-record" viewBox="0 0 24 24"><path d="M6 5h12v15H6z"/><path d="M9 9h6M9 13h6M9 17h4"/></symbol>
-      <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M4.2 7.5l2.6 1.5M17.2 15l2.6 1.5M19.8 7.5 17.2 9M6.8 15l-2.6 1.5"/></symbol>
+      <symbol id="icon-brush-tab" viewBox="0 0 24 24"><path d="M4.2 18.4 15.7 6.9c1.3-1.3 3.1-1.5 4.1-.5s.8 2.8-.5 4.1L7.8 22H4v-3.6z"/><path d="M14.2 8.4 17.8 12"/><path d="M4.8 4.6v2.8M3.4 6h2.8M8.5 2.8v2.4M7.3 4h2.4"/></symbol>
+      <symbol id="icon-data-tab" viewBox="0 0 24 24"><path d="M5 19V6.5A1.5 1.5 0 0 1 6.5 5H18"/><path d="M8 16v-4M12 16V9M16 16v-6"/><path d="M7 19h12"/></symbol>
+      <symbol id="icon-settings-tab" viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14"/><circle cx="9" cy="7" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="11" cy="17" r="1.8"/></symbol>
       <symbol id="icon-play" viewBox="0 0 24 24"><path d="M9 6v12l10-6z"/></symbol>
       <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></symbol>
       <symbol id="icon-up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
@@ -210,9 +210,9 @@
     </main>
 
     <nav class="bottom-nav" aria-label="底部导航">
-      <button class="active" data-tab="checkin" type="button"><span><svg><use href="#icon-home"></use></svg></span>打卡</button>
-      <button data-tab="data" type="button"><span><svg><use href="#icon-record"></use></svg></span>数据</button>
-      <button data-tab="mine" type="button"><span><svg><use href="#icon-settings"></use></svg></span>设置</button>
+      <button class="active" data-tab="checkin" type="button"><span><svg><use href="#icon-brush-tab"></use></svg></span>刷牙</button>
+      <button data-tab="data" type="button"><span><svg><use href="#icon-data-tab"></use></svg></span>数据</button>
+      <button data-tab="mine" type="button"><span><svg><use href="#icon-settings-tab"></use></svg></span>设置</button>
     </nav>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>

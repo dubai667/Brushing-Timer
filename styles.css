@@ -1347,8 +1347,8 @@ input:focus, select:focus {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   width: min(100vw, 480px);
-  padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
-  border-top: 2px solid var(--line);
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(72, 166, 70, 0.14);
   border-radius: 0;
   background: rgba(255, 254, 245, 0.96);
   backdrop-filter: blur(18px);
@@ -1358,27 +1358,49 @@ input:focus, select:focus {
 
 .bottom-nav button {
   display: grid;
-  min-height: 54px;
+  min-height: 52px;
   justify-items: center;
-  gap: 4px;
+  gap: 3px;
   border: 0;
   border-radius: 14px;
   background: transparent;
-  color: #91aa7d;
+  color: #8aa17b;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 800;
+  transition: color 180ms ease, transform 180ms ease;
 }
 
 .bottom-nav button span {
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   place-items: center;
   border-radius: 50%;
+  transition: background 180ms ease, transform 180ms ease;
 }
 
-.bottom-nav button.active { color: var(--accent); }
-.bottom-nav button.active span { background: #e7f7cf; }
+.bottom-nav svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bottom-nav button.active {
+  color: var(--accent);
+}
+
+.bottom-nav button.active span {
+  background: rgba(72, 166, 70, 0.13);
+  transform: translateY(-1px);
+}
+
+.bottom-nav button:active {
+  transform: scale(0.96);
+}
 
 .toast {
   position: fixed;
