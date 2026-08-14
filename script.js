@@ -728,7 +728,7 @@ function bindControls() {
   });
 
   $("#reminderHelpButton")?.addEventListener("click", () => {
-    toast("1点到12点早间，12点到17点午间，17点到1点晚间");
+    toast("早间1-12点｜午间12-17点｜晚间17-1点");
   });
 
   $("#orderList").addEventListener("click", (event) => {

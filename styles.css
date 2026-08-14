@@ -1411,13 +1411,16 @@ input:focus, select:focus {
   left: 50%;
   bottom: calc(86px + env(safe-area-inset-bottom));
   z-index: 30;
-  max-width: min(320px, calc(100vw - 32px));
+  max-width: calc(100vw - 20px);
   padding: 12px 14px;
   border-radius: 999px;
   background: var(--accent-dark);
   color: #fff;
   font-size: 13px;
   font-weight: 900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 12px);
