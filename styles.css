@@ -1232,6 +1232,34 @@ input:focus, select:focus {
   gap: 8px;
 }
 
+.backup-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.backup-button {
+  display: inline-flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(72, 166, 70, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 254, 245, 0.52);
+  color: var(--accent-dark);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.backup-button:active {
+  transform: scale(0.98);
+}
+
+.backup-file {
+  display: none;
+}
+
 .order-preset {
   min-height: 44px;
   padding: 0 10px;

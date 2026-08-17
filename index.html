@@ -11,7 +11,7 @@
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./assets/app-icon-512.png" type="image/png" />
     <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
-    <link rel="stylesheet" href="./styles.css?v=111" />
+    <link rel="stylesheet" href="./styles.css?v=115" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -110,7 +110,6 @@
       </section>
 
       <section class="view mine-view" data-view="mine">
-        <img class="settings-banner" src="./assets/settings-toothbrush-banner-small.png" alt="" aria-hidden="true" />
         <section class="panel">
           <div class="setting-group sync-group" hidden>
             <button class="account-card" id="syncOpenButton" type="button">
@@ -206,7 +205,17 @@
             <h3>刷牙顺序</h3>
             <div class="order-list" id="orderList"></div>
           </div>
+
+          <div class="setting-group">
+            <h3>本地备份</h3>
+            <div class="backup-actions">
+              <button class="backup-button" id="importBackupButton" type="button">导入</button>
+              <button class="backup-button" id="exportBackupButton" type="button">导出</button>
+            </div>
+            <input class="backup-file" id="importBackupInput" type="file" accept="application/json,.json" />
+          </div>
         </section>
+        <img class="settings-banner" src="./assets/settings-toothbrush-banner-small.png" alt="" aria-hidden="true" />
       </section>
     </main>
 
@@ -233,7 +242,7 @@
     </div>
     <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./script.js?v=119"></script>
+    <script src="./script.js?v=121"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
