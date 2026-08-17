@@ -222,6 +222,57 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+function exportLocalBackup() {
+  const timestamp = new Date();
+  const backup = {
+    app: "Brushing Timer",
+    version: 1,
+    exportedAt: timestamp.toISOString(),
+    storageKey: STORAGE_KEY,
+    data: normalizeState({
+      ...state,
+      records: Array.isArray(state.records) ? state.records : [],
+    }),
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const filenameDate = timestamp.toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `刷牙计时-本地备份-${filenameDate}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast("本地备份已导出");
+}
+
+async function importLocalBackup(file) {
+  if (!file) return;
+  try {
+    const raw = await file.text();
+    const backup = JSON.parse(raw);
+    const importedState = backup?.data || backup;
+    if (!importedState || !Array.isArray(importedState.records)) {
+      toast("备份文件格式不对");
+      return;
+    }
+    const shouldImport = window.confirm("导入会覆盖当前本地记录，是否继续？");
+    if (!shouldImport) return;
+    state = normalizeState({
+      ...defaultState,
+      ...importedState,
+      records: importedState.records,
+    });
+    saveState();
+    resetTimer(false);
+    renderAll();
+    toast("本地备份已导入");
+  } catch {
+    toast("导入失败，请选择正确的备份文件");
+  }
+}
+
 function getRecordPeriod(record) {
   if (record.period) return getPeriodLabel(record.period);
   return getRecordPeriodLabel(record.time);
@@ -738,6 +789,15 @@ function bindControls() {
     saveState();
     resetTimer(false);
     renderAll();
+  });
+
+  $("#exportBackupButton")?.addEventListener("click", exportLocalBackup);
+  $("#importBackupButton")?.addEventListener("click", () => {
+    $("#importBackupInput")?.click();
+  });
+  $("#importBackupInput")?.addEventListener("change", (event) => {
+    importLocalBackup(event.target.files?.[0]);
+    event.target.value = "";
   });
 
   $("#syncCodeButton")?.addEventListener("click", requestSyncCode);
