@@ -3,13 +3,14 @@
   "short_name": "刷牙",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f7f4df",
-  "theme_color": "#bfe8f4",
+  "background_color": "#48A646",
+  "theme_color": "#48A646",
   "icons": [
     {
-      "src": "./icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "./assets/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
