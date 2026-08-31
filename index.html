@@ -11,7 +11,7 @@
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./assets/app-icon-512.png" type="image/png" />
     <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
-    <link rel="stylesheet" href="./styles.css?v=115" />
+    <link rel="stylesheet" href="./styles.css?v=120" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -23,6 +23,7 @@
       <symbol id="icon-up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
       <symbol id="icon-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
       <symbol id="icon-trophy" viewBox="0 0 24 24"><path d="M8 5h8v4a4 4 0 0 1-8 0z"/><path d="M8 7H5a3 3 0 0 0 3 4M16 7h3a3 3 0 0 1-3 4M12 13v4M9 21h6M10 17h4"/></symbol>
+      <symbol id="icon-tutorial" viewBox="0 0 24 24"><path d="M6.2 5.6h6.2c1.2 0 2.1.9 2.1 2.1v10.7H8.2a2 2 0 0 1-2-2z"/><path d="M14.5 7.7c0-1.2.9-2.1 2.1-2.1h1.2v12.8h-3.3"/><path d="M8.8 9.4h3.1M8.8 12.1h3.1M8.8 14.8h2.2"/><path d="M18.8 3.2v2.2M17.7 4.3h2.2"/></symbol>
       <symbol id="icon-smile-tooth" viewBox="0 0 24 24"><path d="M8.8 3.8c-3-.5-5.3 1.7-5 5 .2 2.8 1.5 5.1 3.2 7.2 1 1.2 2.4.8 2.7-.8l.6-3.4c.2-1.1 1.6-1.1 1.8 0l.7 3.8c.3 1.5 2.2 1.7 3.1.4 1.7-2.4 3-4.7 3.2-7.4.2-3.4-2.3-5.6-5.5-4.6-1.5.5-3 .5-4.8-.2z"/><path d="M8.2 9.8h.1M14.8 9.8h.1M9.3 12.7c1.4 1.3 3.8 1.3 5.2 0"/></symbol>
       <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M19.8 4.2l-2.1 2.1M6.3 17.7l-2.1 2.1"/></symbol>
       <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M6 14a6 6 0 0 0 9 5.2A8 8 0 0 1 13 4a6 6 0 0 0-7 10z"/></symbol>
@@ -33,6 +34,9 @@
         <header class="hero">
           <div class="hero-top">
             <span id="todayText"></span>
+            <button class="tutorial-button" id="tutorialButton" type="button" aria-label="查看巴氏刷牙法教程">
+              <svg aria-hidden="true"><use href="#icon-tutorial"></use></svg>
+            </button>
           </div>
 
           <section class="brush-stage" aria-live="polite" hidden>
@@ -215,7 +219,6 @@
             <input class="backup-file" id="importBackupInput" type="file" accept="application/json,.json" />
           </div>
         </section>
-        <img class="settings-banner" src="./assets/settings-toothbrush-banner-small.png" alt="" aria-hidden="true" />
       </section>
     </main>
 
@@ -226,6 +229,13 @@
     </nav>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="tutorial-backdrop" id="tutorialDialog" hidden>
+      <section class="tutorial-dialog" role="dialog" aria-modal="true" aria-label="巴氏刷牙法步骤图">
+        <button class="tutorial-close" id="tutorialCloseButton" type="button" aria-label="关闭教程">×</button>
+        <img class="tutorial-image" src="./assets/bass-method-tutorial-v2.jpg" alt="巴氏刷牙法步骤图" />
+        <a class="tutorial-video-link" href="https://weixin.qq.com/sph/AqCAHYZaB2" target="_blank" rel="noopener noreferrer">查看视频教程</a>
+      </section>
+    </div>
     <div class="dialog-backdrop" id="syncDialog" hidden>
       <section class="sync-dialog" role="dialog" aria-modal="true" aria-labelledby="syncDialogTitle">
         <button class="dialog-close" id="syncDialogClose" type="button" aria-label="关闭">×</button>
@@ -242,7 +252,7 @@
     </div>
     <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./script.js?v=121"></script>
+    <script src="./script.js?v=123"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {

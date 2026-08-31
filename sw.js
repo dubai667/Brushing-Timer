@@ -1,16 +1,16 @@
-const CACHE_NAME = "brushing-timer-v2026-08-17-05";
+const CACHE_NAME = "brushing-timer-v2026-08-28-04";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=115",
-  "./script.js?v=121",
+  "./styles.css?v=120",
+  "./script.js?v=123",
   "./manifest.json",
   "./assets/app-icon-512.png",
   "./assets/apple-touch-icon.png",
   "./assets/checkin-banner.png",
   "./assets/checkin-banner-small.jpg",
   "./assets/total-banner-small.jpg",
-  "./assets/settings-toothbrush-banner-small.png",
+  "./assets/bass-method-tutorial-v2.jpg",
 ];
 
 self.addEventListener("install", (event) => {
