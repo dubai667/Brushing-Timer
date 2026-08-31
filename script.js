@@ -1,4 +1,6 @@
 const STORAGE_KEY = "toothTimer:v1";
+const TIMER_STORAGE_KEY = "toothTimer:activeTimer";
+const TUTORIAL_SEEN_KEY = "toothTimer:bassTutorialSeen";
 const SUPABASE_URL = "https://dtleozvtroankpuviytl.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oRImKCE4ba_xHQgz-Q09cw_NnBrAyi1";
 const AUTH_REDIRECT_URL = "https://dubai667.github.io/Brushing-Timer/";
@@ -222,6 +224,46 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+function saveTimerSnapshot() {
+  if (!timer.running) {
+    localStorage.removeItem(TIMER_STORAGE_KEY);
+    return;
+  }
+  localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify({
+    startedAt: timer.startedAt,
+    elapsed: timer.elapsed,
+    brushMinutes: state.brushMinutes,
+    orderPreset: state.orderPreset,
+    brushCount: state.brushCount,
+    savedAt: Date.now(),
+  }));
+}
+
+function clearTimerSnapshot() {
+  localStorage.removeItem(TIMER_STORAGE_KEY);
+}
+
+function restoreTimerSnapshot() {
+  try {
+    const snapshot = JSON.parse(localStorage.getItem(TIMER_STORAGE_KEY) || "null");
+    if (!snapshot?.startedAt) return;
+    if (Number(snapshot.brushMinutes) !== Number(state.brushMinutes)) return clearTimerSnapshot();
+    if (snapshot.orderPreset !== state.orderPreset) return clearTimerSnapshot();
+    if (Number(snapshot.brushCount) !== Number(state.brushCount)) return clearTimerSnapshot();
+    timer.running = true;
+    timer.done = false;
+    timer.startedAt = Number(snapshot.startedAt);
+    timer.elapsed = Number(snapshot.elapsed) || 0;
+    timer.lastStepIndex = 0;
+    timer.lastCountdownKey = "";
+    timer.interval = setInterval(renderTimer, 500);
+    requestWakeLock();
+    toast("已恢复刷牙计时");
+  } catch {
+    clearTimerSnapshot();
+  }
+}
+
 function exportLocalBackup() {
   const timestamp = new Date();
   const backup = {
@@ -430,6 +472,11 @@ function renderTimer() {
   const step = orderedSteps[info.stepIndex];
   const progress = totalDuration() ? (info.elapsed / totalDuration()) * 360 : 0;
   const idle = !timer.running && !timer.done && info.elapsed <= 0.1;
+  const startButton = $("#startButton");
+  if (startButton) {
+    startButton.disabled = timer.running;
+    startButton.querySelector("span").textContent = timer.done ? "再刷一次" : "开始刷牙";
+  }
 
   $("#timeLeft").textContent = formatSeconds(info.elapsed);
   $("#stepTimeLeft").textContent = `${getPeriodLabel(getActivePeriodByHour(new Date().getHours()))}打卡`;
@@ -488,10 +535,11 @@ function startTimer() {
   timer.startedAt = Date.now();
   timer.lastStepIndex = getTimerInfo().stepIndex;
   timer.lastCountdownKey = "";
+  saveTimerSnapshot();
   $("#startButton").disabled = true;
   restartAnimation($(".timer-ring"), "start-pulse");
   restartAnimation($("#startButton"), "button-press");
-  timer.interval = setInterval(renderTimer, 250);
+  timer.interval = setInterval(renderTimer, 500);
   renderTimer();
 }
 
@@ -503,6 +551,7 @@ function resetTimer(showToast = true) {
   timer.lastStepIndex = 0;
   timer.lastCountdownKey = "";
   clearInterval(timer.interval);
+  clearTimerSnapshot();
   releaseWakeLock();
   $("#startButton").disabled = false;
   $("#startButton span").textContent = "开始刷牙";
@@ -515,6 +564,7 @@ function completeTimer() {
   timer.running = false;
   timer.done = true;
   clearInterval(timer.interval);
+  clearTimerSnapshot();
   releaseWakeLock();
   $("#startButton").disabled = false;
   $("#startButton span").textContent = "再刷一次";
@@ -738,6 +788,11 @@ function bindTabs() {
 function bindControls() {
   $("#startButton").addEventListener("click", startTimer);
   $("#resetButton")?.addEventListener("click", resetTimer);
+  $("#tutorialButton")?.addEventListener("click", openTutorialDialog);
+  $("#tutorialCloseButton")?.addEventListener("click", () => closeTutorialDialog(true));
+  $("#tutorialDialog")?.addEventListener("click", (event) => {
+    if (event.target.id === "tutorialDialog") closeTutorialDialog(true);
+  });
 
   $$("input[name='brushCount']").forEach((input) => {
     input.addEventListener("change", () => {
@@ -798,6 +853,10 @@ function bindControls() {
   $("#importBackupInput")?.addEventListener("change", (event) => {
     importLocalBackup(event.target.files?.[0]);
     event.target.value = "";
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !$("#tutorialDialog")?.hidden) closeTutorialDialog(true);
   });
 
   $("#syncCodeButton")?.addEventListener("click", requestSyncCode);
@@ -964,12 +1023,30 @@ function toast(message) {
   toast.timer = setTimeout(() => el.classList.remove("show"), 2200);
 }
 
+function openTutorialDialog() {
+  $("#tutorialDialog")?.removeAttribute("hidden");
+}
+
+function closeTutorialDialog(markSeen = false) {
+  $("#tutorialDialog")?.setAttribute("hidden", "");
+  if (markSeen) localStorage.setItem(TUTORIAL_SEEN_KEY, "1");
+}
+
+function showTutorialOnFirstLaunch() {
+  if (localStorage.getItem(TUTORIAL_SEEN_KEY)) return;
+  window.setTimeout(openTutorialDialog, 500);
+}
+
 bindTabs();
 bindControls();
+restoreTimerSnapshot();
 document.addEventListener("visibilitychange", () => {
+  if (timer.running) saveTimerSnapshot();
   if (document.visibilityState === "visible" && timer.running) requestWakeLock();
 });
+window.addEventListener("pagehide", saveTimerSnapshot);
 renderAll();
+showTutorialOnFirstLaunch();
 initCloudSync();
 checkReminders();
 setInterval(checkReminders, 30 * 1000);
