@@ -65,6 +65,7 @@ let syncBusy = false;
 let otpCooldown = 0;
 let otpCooldownTimer = null;
 let wakeLock = null;
+let selectedRecordMonth = monthKeyFromDate(sessionDateKey());
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -356,6 +357,38 @@ function getRecordPeriodLabel(time = "") {
   return { morning: "早间", noon: "午间", night: "晚间" }[period] || "早间";
 }
 
+function monthKeyFromDate(dateKey = sessionDateKey()) {
+  return String(dateKey).slice(0, 7);
+}
+
+function getMonthLabel(monthKey) {
+  const [year, month] = String(monthKey).split("-");
+  return `${Number(year)}年${Number(month)}月`;
+}
+
+function getRecordMonths() {
+  const currentMonth = monthKeyFromDate(sessionDateKey());
+  const firstMonth = (state.records || [])
+    .map((record) => monthKeyFromDate(record.date))
+    .filter(Boolean)
+    .sort()[0] || currentMonth;
+  const [startYear, startMonth] = firstMonth.split("-").map(Number);
+  const [endYear, endMonth] = currentMonth.split("-").map(Number);
+  const cursor = new Date(startYear, startMonth - 1, 1);
+  const end = new Date(endYear, endMonth - 1, 1);
+  const months = [];
+  while (cursor <= end) {
+    months.push(`${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}`);
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return months.reverse();
+}
+
+function ensureSelectedRecordMonth() {
+  const months = getRecordMonths();
+  if (!months.includes(selectedRecordMonth)) selectedRecordMonth = months[0] || monthKeyFromDate(sessionDateKey());
+}
+
 function notifyBrushReminder(period) {
   const label = getPeriodLabel(period);
   toast(`${label}刷牙时间到了`);
@@ -605,24 +638,44 @@ function getStreak() {
 }
 
 function renderRecords() {
+  ensureSelectedRecordMonth();
   $("#streakCount").innerHTML = `<span class="stat-value">${getStreak()}</span><span class="stat-unit">天</span>`;
   $("#totalCount").innerHTML = `<span class="stat-value">${(state.records || []).length}</span><span class="stat-unit">次</span>`;
+  renderMonthSwitcher();
   renderCalendar();
   $("#recordsList").innerHTML = state.records?.length
-    ? state.records
-        .map(
-          (record) => `
-            <article class="record-item">
-              <div>
-                <strong>${record.date}</strong>
+    ? getRecordMonths()
+        .map((monthKey) => {
+          const monthRecords = (state.records || []).filter((record) => monthKeyFromDate(record.date) === monthKey);
+          const open = monthKey === selectedRecordMonth;
+          return `
+            <details class="record-month" ${open ? "open" : ""} data-record-month="${monthKey}">
+              <summary>
+                <span>${getMonthLabel(monthKey)}</span>
+                <strong>${monthRecords.length} 次</strong>
+              </summary>
+              <div class="record-month-list">
+                ${monthRecords.length
+                  ? monthRecords
+                      .map(
+                        (record) => `
+                          <article class="record-item">
+                            <div>
+                              <strong>${record.date}</strong>
+                            </div>
+                            <div class="record-meta">
+                              <span>${record.time}</span>
+                              <span class="record-period">${getRecordPeriod(record)}</span>
+                            </div>
+                          </article>
+                        `,
+                      )
+                      .join("")
+                  : `<p class="empty">这个月还没有刷牙记录。</p>`}
               </div>
-              <div class="record-meta">
-                <span>${record.time}</span>
-                <span class="record-period">${getRecordPeriod(record)}</span>
-              </div>
-            </article>
-          `,
-        )
+            </details>
+          `;
+        })
         .join("")
     : `<p class="empty">还没有刷牙记录。</p>`;
 }
@@ -631,8 +684,9 @@ function renderCalendar() {
   const calendar = $("#calendarView");
   if (!calendar) return;
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  const [selectedYear, selectedMonth] = selectedRecordMonth.split("-").map(Number);
+  const year = selectedYear || now.getFullYear();
+  const month = Number.isFinite(selectedMonth) ? selectedMonth - 1 : now.getMonth();
   const firstDay = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const offset = firstDay.getDay();
@@ -655,7 +709,7 @@ function renderCalendar() {
   for (let day = 1; day <= daysInMonth; day += 1) {
     const dayPeriods = recordDayPeriods.get(day) || new Set();
     const done = expectedPeriods.every((period) => dayPeriods.has(period));
-    const today = day === now.getDate();
+    const today = year === now.getFullYear() && month === now.getMonth() && day === now.getDate();
     const dayKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const shouldShowDots = firstRecordDate && dayKey >= firstRecordDate && dayKey <= currentSessionDate;
     const dots = shouldShowDots
@@ -677,6 +731,26 @@ function renderCalendar() {
     <div class="calendar-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
     <div class="calendar-grid">${cells.join("")}</div>
   `;
+}
+
+function renderMonthSwitcher() {
+  const switcher = $("#monthSwitcher");
+  if (!switcher) return;
+  const months = getRecordMonths();
+  switcher.innerHTML = `
+    <button class="month-nav" type="button" data-month-step="1" aria-label="上一个月">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-up"></use></svg>
+    </button>
+    <button class="month-current" type="button" aria-label="当前查看月份">${getMonthLabel(selectedRecordMonth)}</button>
+    <button class="month-nav" type="button" data-month-step="-1" aria-label="下一个月">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-down"></use></svg>
+    </button>
+  `;
+  const currentIndex = months.indexOf(selectedRecordMonth);
+  const prevButton = switcher.querySelector("[data-month-step='1']");
+  const nextButton = switcher.querySelector("[data-month-step='-1']");
+  if (prevButton) prevButton.disabled = currentIndex >= months.length - 1;
+  if (nextButton) nextButton.disabled = currentIndex <= 0;
 }
 
 function renderSettings() {
@@ -793,6 +867,22 @@ function bindControls() {
   $("#tutorialDialog")?.addEventListener("click", (event) => {
     if (event.target.id === "tutorialDialog") closeTutorialDialog(true);
   });
+  $("#monthSwitcher")?.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-month-step]");
+    if (!button || button.disabled) return;
+    const months = getRecordMonths();
+    const currentIndex = months.indexOf(selectedRecordMonth);
+    const nextIndex = currentIndex + Number(button.dataset.monthStep);
+    if (!months[nextIndex]) return;
+    selectedRecordMonth = months[nextIndex];
+    renderRecords();
+  });
+  $("#recordsList")?.addEventListener("toggle", (event) => {
+    const details = event.target.closest("details[data-record-month]");
+    if (!details || !details.open) return;
+    selectedRecordMonth = details.dataset.recordMonth;
+    renderRecords();
+  }, true);
 
   $$("input[name='brushCount']").forEach((input) => {
     input.addEventListener("change", () => {
