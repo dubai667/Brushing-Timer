@@ -1119,12 +1119,37 @@ function toast(message) {
 }
 
 function openTutorialDialog() {
-  $("#tutorialDialog")?.removeAttribute("hidden");
+  const dialog = $("#tutorialDialog");
+  if (!dialog) return;
+  dialog.classList.remove("closing");
+  dialog.style.removeProperty("--close-x");
+  dialog.style.removeProperty("--close-y");
+  dialog.removeAttribute("hidden");
 }
 
 function closeTutorialDialog(markSeen = false) {
-  $("#tutorialDialog")?.setAttribute("hidden", "");
+  const backdrop = $("#tutorialDialog");
+  const dialog = backdrop?.querySelector(".tutorial-dialog");
+  const target = $("#tutorialButton");
+  if (!backdrop || !dialog) return;
   if (markSeen) localStorage.setItem(TUTORIAL_SEEN_KEY, "1");
+  if (!target || backdrop.classList.contains("closing")) {
+    backdrop.setAttribute("hidden", "");
+    return;
+  }
+  const dialogRect = dialog.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const dialogCenterX = dialogRect.left + dialogRect.width / 2;
+  const dialogCenterY = dialogRect.top + dialogRect.height / 2;
+  const targetCenterX = targetRect.left + targetRect.width / 2;
+  const targetCenterY = targetRect.top + targetRect.height / 2;
+  backdrop.style.setProperty("--close-x", `${targetCenterX - dialogCenterX}px`);
+  backdrop.style.setProperty("--close-y", `${targetCenterY - dialogCenterY}px`);
+  backdrop.classList.add("closing");
+  window.setTimeout(() => {
+    backdrop.classList.remove("closing");
+    backdrop.setAttribute("hidden", "");
+  }, 320);
 }
 
 function showTutorialOnFirstLaunch() {
