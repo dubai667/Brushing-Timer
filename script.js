@@ -641,7 +641,6 @@ function renderRecords() {
   ensureSelectedRecordMonth();
   $("#streakCount").innerHTML = `<span class="stat-value">${getStreak()}</span><span class="stat-unit">天</span>`;
   $("#totalCount").innerHTML = `<span class="stat-value">${(state.records || []).length}</span><span class="stat-unit">次</span>`;
-  renderMonthSwitcher();
   renderCalendar();
   $("#recordsList").innerHTML = state.records?.length
     ? getRecordMonths()
@@ -652,7 +651,10 @@ function renderRecords() {
             <details class="record-month" ${open ? "open" : ""} data-record-month="${monthKey}">
               <summary>
                 <span>${getMonthLabel(monthKey)}</span>
-                <strong>${monthRecords.length} 次</strong>
+                <span class="record-month-action">
+                  <strong>${monthRecords.length} 次</strong>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-down"></use></svg>
+                </span>
               </summary>
               <div class="record-month-list">
                 ${monthRecords.length
@@ -727,30 +729,18 @@ function renderCalendar() {
   calendar.innerHTML = `
     <div class="calendar-head">
       <strong>${year}年${month + 1}月</strong>
+      <label class="calendar-month-select" aria-label="选择月份">
+        <select id="calendarMonthSelect">
+          ${getRecordMonths()
+            .map((monthKey) => `<option value="${monthKey}" ${monthKey === selectedRecordMonth ? "selected" : ""}>${getMonthLabel(monthKey)}</option>`)
+            .join("")}
+        </select>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-down"></use></svg>
+      </label>
     </div>
     <div class="calendar-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
     <div class="calendar-grid">${cells.join("")}</div>
   `;
-}
-
-function renderMonthSwitcher() {
-  const switcher = $("#monthSwitcher");
-  if (!switcher) return;
-  const months = getRecordMonths();
-  switcher.innerHTML = `
-    <button class="month-nav" type="button" data-month-step="1" aria-label="上一个月">
-      <span aria-hidden="true">‹</span>
-    </button>
-    <button class="month-current" type="button" aria-label="当前查看月份">${getMonthLabel(selectedRecordMonth)}</button>
-    <button class="month-nav" type="button" data-month-step="-1" aria-label="下一个月">
-      <span aria-hidden="true">›</span>
-    </button>
-  `;
-  const currentIndex = months.indexOf(selectedRecordMonth);
-  const prevButton = switcher.querySelector("[data-month-step='1']");
-  const nextButton = switcher.querySelector("[data-month-step='-1']");
-  if (prevButton) prevButton.disabled = currentIndex >= months.length - 1;
-  if (nextButton) nextButton.disabled = currentIndex <= 0;
 }
 
 function renderSettings() {
@@ -867,21 +857,15 @@ function bindControls() {
   $("#tutorialDialog")?.addEventListener("click", (event) => {
     if (event.target.id === "tutorialDialog") closeTutorialDialog(true);
   });
-  $("#monthSwitcher")?.addEventListener("click", (event) => {
-    const button = event.target.closest("button[data-month-step]");
-    if (!button || button.disabled) return;
-    const months = getRecordMonths();
-    const currentIndex = months.indexOf(selectedRecordMonth);
-    const nextIndex = currentIndex + Number(button.dataset.monthStep);
-    if (!months[nextIndex]) return;
-    selectedRecordMonth = months[nextIndex];
+  $("#calendarView")?.addEventListener("change", (event) => {
+    if (event.target.id !== "calendarMonthSelect") return;
+    selectedRecordMonth = event.target.value;
     renderRecords();
   });
   $("#recordsList")?.addEventListener("toggle", (event) => {
     const details = event.target.closest("details[data-record-month]");
     if (!details || !details.open) return;
     selectedRecordMonth = details.dataset.recordMonth;
-    renderMonthSwitcher();
     renderCalendar();
   }, true);
 
