@@ -1619,6 +1619,12 @@ input:focus, select:focus {
   background: rgba(0, 0, 0, 0.6);
 }
 
+.tutorial-backdrop.closing {
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  transition: background 320ms ease;
+}
+
 .tutorial-backdrop[hidden] {
   display: none;
 }
@@ -1631,6 +1637,13 @@ input:focus, select:focus {
   border-radius: 22px;
   background: transparent;
   overflow: visible;
+  transform-origin: center;
+  will-change: transform, opacity;
+  animation: tutorial-open 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.tutorial-backdrop.closing .tutorial-dialog {
+  animation: tutorial-close 320ms cubic-bezier(0.24, 0.72, 0.2, 1) forwards;
 }
 
 .tutorial-image {
@@ -1683,6 +1696,28 @@ input:focus, select:focus {
 
 .tutorial-close:active {
   transform: scale(0.96);
+}
+
+@keyframes tutorial-open {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tutorial-close {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--close-x, 120px), var(--close-y, -280px)) scale(0.08);
+  }
 }
 
 .confetti-layer {
