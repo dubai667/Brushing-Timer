@@ -656,18 +656,20 @@ svg * { vector-effect: non-scaling-stroke; }
   color: var(--accent-dark);
 }
 
-.calendar-month-select select {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
+.calendar-month-trigger {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
-  appearance: none;
-  -webkit-appearance: none;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.calendar-month-select svg {
+.calendar-month-trigger svg {
   width: 18px;
   height: 18px;
   fill: none;
@@ -675,7 +677,43 @@ svg * { vector-effect: non-scaling-stroke; }
   stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  pointer-events: none;
+}
+
+.calendar-month-menu {
+  position: absolute;
+  top: 34px;
+  right: 0;
+  z-index: 5;
+  min-width: 116px;
+  display: grid;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 14px;
+  background: rgba(255, 254, 245, 0.98);
+  border: 1px solid rgba(72, 166, 70, 0.14);
+  box-shadow: 0 10px 24px rgba(31, 83, 39, 0.16);
+}
+
+.calendar-month-menu[hidden] {
+  display: none;
+}
+
+.calendar-month-menu button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--accent-dark);
+  font-size: 14px;
+  font-weight: 900;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.calendar-month-menu button.active {
+  background: rgba(72, 166, 70, 0.12);
+  color: var(--accent);
 }
 
 .calendar-week,

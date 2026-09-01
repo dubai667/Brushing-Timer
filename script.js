@@ -729,14 +729,20 @@ function renderCalendar() {
   calendar.innerHTML = `
     <div class="calendar-head">
       <strong>${year}年${month + 1}月</strong>
-      <label class="calendar-month-select" aria-label="选择月份">
-        <select id="calendarMonthSelect">
+      <div class="calendar-month-select">
+        <button class="calendar-month-trigger" id="calendarMonthTrigger" type="button" aria-label="选择月份" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-down"></use></svg>
+        </button>
+        <div class="calendar-month-menu" id="calendarMonthMenu" hidden>
           ${getRecordMonths()
-            .map((monthKey) => `<option value="${monthKey}" ${monthKey === selectedRecordMonth ? "selected" : ""}>${getMonthLabel(monthKey)}</option>`)
+            .map((monthKey) => `
+              <button class="${monthKey === selectedRecordMonth ? "active" : ""}" type="button" data-select-month="${monthKey}">
+                ${getMonthLabel(monthKey)}
+              </button>
+            `)
             .join("")}
-        </select>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-down"></use></svg>
-      </label>
+        </div>
+      </div>
     </div>
     <div class="calendar-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
     <div class="calendar-grid">${cells.join("")}</div>
@@ -857,9 +863,18 @@ function bindControls() {
   $("#tutorialDialog")?.addEventListener("click", (event) => {
     if (event.target.id === "tutorialDialog") closeTutorialDialog(true);
   });
-  $("#calendarView")?.addEventListener("change", (event) => {
-    if (event.target.id !== "calendarMonthSelect") return;
-    selectedRecordMonth = event.target.value;
+  $("#calendarView")?.addEventListener("click", (event) => {
+    const trigger = event.target.closest("#calendarMonthTrigger");
+    const monthButton = event.target.closest("button[data-select-month]");
+    const menu = $("#calendarMonthMenu");
+    if (trigger && menu) {
+      const nextHidden = !menu.hidden;
+      menu.hidden = nextHidden;
+      trigger.setAttribute("aria-expanded", String(!nextHidden));
+      return;
+    }
+    if (!monthButton) return;
+    selectedRecordMonth = monthButton.dataset.selectMonth;
     renderRecords();
   });
   $("#recordsList")?.addEventListener("toggle", (event) => {
@@ -932,6 +947,11 @@ function bindControls() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !$("#tutorialDialog")?.hidden) closeTutorialDialog(true);
+    if (event.key === "Escape") $("#calendarMonthMenu")?.setAttribute("hidden", "");
+  });
+  document.addEventListener("click", (event) => {
+    if (event.target.closest(".calendar-month-select")) return;
+    $("#calendarMonthMenu")?.setAttribute("hidden", "");
   });
 
   $("#syncCodeButton")?.addEventListener("click", requestSyncCode);
