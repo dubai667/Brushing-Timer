@@ -627,7 +627,7 @@ svg * { vector-effect: non-scaling-stroke; }
 
 .month-switcher {
   display: grid;
-  grid-template-columns: 34px 1fr 34px;
+  grid-template-columns: 40px 1fr 40px;
   align-items: center;
   gap: 8px;
   margin: 0 0 12px;
@@ -640,32 +640,21 @@ svg * { vector-effect: non-scaling-stroke; }
 }
 
 .month-nav {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
   background: rgba(72, 166, 70, 0.1);
   color: var(--accent-dark);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
 }
 
-.month-nav svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.1;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.month-nav[data-month-step="1"] svg {
-  transform: rotate(-90deg);
-}
-
-.month-nav[data-month-step="-1"] svg {
-  transform: rotate(-90deg);
+.month-nav span {
+  transform: translateY(-1px);
 }
 
 .month-nav:disabled {

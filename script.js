@@ -739,11 +739,11 @@ function renderMonthSwitcher() {
   const months = getRecordMonths();
   switcher.innerHTML = `
     <button class="month-nav" type="button" data-month-step="1" aria-label="上一个月">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-up"></use></svg>
+      <span aria-hidden="true">‹</span>
     </button>
     <button class="month-current" type="button" aria-label="当前查看月份">${getMonthLabel(selectedRecordMonth)}</button>
     <button class="month-nav" type="button" data-month-step="-1" aria-label="下一个月">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#icon-down"></use></svg>
+      <span aria-hidden="true">›</span>
     </button>
   `;
   const currentIndex = months.indexOf(selectedRecordMonth);
@@ -881,7 +881,8 @@ function bindControls() {
     const details = event.target.closest("details[data-record-month]");
     if (!details || !details.open) return;
     selectedRecordMonth = details.dataset.recordMonth;
-    renderRecords();
+    renderMonthSwitcher();
+    renderCalendar();
   }, true);
 
   $$("input[name='brushCount']").forEach((input) => {
