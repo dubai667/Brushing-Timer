@@ -6,7 +6,7 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_oRImKCE4ba_xHQgz-Q09cw_NnBrAyi1
 const AUTH_REDIRECT_URL = "https://dubai667.github.io/Brushing-Timer/";
 
 const steps = [
-  { id: "upperOuter", title: "上排外侧", duration: 20, hint: "牙刷轻轻打圈，照顾到牙龈边缘。", zone: "M83 113c15-12 38-13 58-4", brush: "translate(0 0)" },
+  { id: "upperOuter", title: "上排外侧", duration: 20, hint: "45°角轻微按压打圈颤动", zone: "M83 113c15-12 38-13 58-4", brush: "translate(0 0)" },
   { id: "upperInner", title: "上排内侧", duration: 20, hint: "牙刷稍微倾斜，慢慢刷到门牙内侧。", zone: "M102 104c18 17 47 17 65 0", brush: "translate(-18 24) rotate(-14deg)" },
   { id: "upperBite", title: "上排咬合面", duration: 15, hint: "前后来回刷，不要漏掉臼齿。", zone: "M86 143c22-8 55-8 78 1", brush: "translate(-4 42) rotate(12deg)" },
   { id: "lowerOuter", title: "下排外侧", duration: 20, hint: "从左到右移动，保持小幅度震动。", zone: "M87 168c24 10 62 10 85-2", brush: "translate(-12 72) rotate(-8deg)" },
