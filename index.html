@@ -11,7 +11,7 @@
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="./assets/app-icon-512.png" type="image/png" />
     <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
-    <link rel="stylesheet" href="./styles.css?v=131" />
+    <link rel="stylesheet" href="./styles.css?v=132" />
   </head>
   <body>
     <svg class="sprite" aria-hidden="true">
@@ -232,7 +232,7 @@
     <div class="tutorial-backdrop" id="tutorialDialog" hidden>
       <section class="tutorial-dialog" role="dialog" aria-modal="true" aria-label="巴氏刷牙法步骤图">
         <button class="tutorial-close" id="tutorialCloseButton" type="button" aria-label="关闭教程">×</button>
-        <img class="tutorial-image" src="./assets/bass-method-tutorial-v2.jpg" alt="巴氏刷牙法步骤图" />
+        <img class="tutorial-image" data-src="./assets/bass-method-tutorial-v2.jpg" alt="巴氏刷牙法步骤图" loading="lazy" fetchpriority="low" />
         <a class="tutorial-video-link" href="https://weixin.qq.com/sph/AqCAHYZaB2" target="_blank" rel="noopener noreferrer">查看视频教程</a>
       </section>
     </div>
@@ -252,7 +252,7 @@
     </div>
     <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./script.js?v=131"></script>
+    <script src="./script.js?v=132"></script>
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
