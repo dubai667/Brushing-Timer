@@ -1132,6 +1132,8 @@ function toast(message) {
 function openTutorialDialog() {
   const dialog = $("#tutorialDialog");
   if (!dialog) return;
+  const image = dialog.querySelector(".tutorial-image");
+  if (image?.dataset.src && !image.src) image.src = image.dataset.src;
   dialog.classList.remove("closing");
   dialog.style.removeProperty("--close-x");
   dialog.style.removeProperty("--close-y");
