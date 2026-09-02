@@ -515,9 +515,9 @@ function renderTimer() {
   $("#stepTimeLeft").textContent = `${getPeriodLabel(getActivePeriodByHour(new Date().getHours()))}打卡`;
   $(".timer-copy")?.classList.toggle("done", timer.done);
   if (timer.done) {
-    $("#stepIndex").textContent = "完成刷牙";
-    $("#stepTitle").textContent = "恭喜你的牙齿又变白了";
-    $("#stepHint").textContent = "";
+    $("#stepIndex").textContent = "";
+    $("#stepTitle").textContent = "恭喜完成打卡";
+    $("#stepHint").textContent = "你的牙齿又变白了";
   } else if (idle) {
     $("#stepIndex").textContent = "第1步";
     $("#stepTitle").textContent = "挤好牙膏";
