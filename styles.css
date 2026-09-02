@@ -311,6 +311,10 @@ svg * { vector-effect: non-scaling-stroke; }
   font-weight: 800;
 }
 
+.timer-copy.done h1 {
+  font-size: 22px;
+}
+
 .timer-copy.step-change {
   animation: stepCopyEnter 360ms ease-out;
 }

@@ -513,9 +513,20 @@ function renderTimer() {
 
   $("#timeLeft").textContent = formatSeconds(info.elapsed);
   $("#stepTimeLeft").textContent = `${getPeriodLabel(getActivePeriodByHour(new Date().getHours()))}打卡`;
-  $("#stepIndex").textContent = `第 ${info.stepIndex + 1} / ${orderedSteps.length} 步`;
-  $("#stepTitle").textContent = `${step.title} ${Math.round(getStepDuration(step))}s`;
-  $("#stepHint").textContent = step.hint;
+  $(".timer-copy")?.classList.toggle("done", timer.done);
+  if (timer.done) {
+    $("#stepIndex").textContent = "完成刷牙";
+    $("#stepTitle").textContent = "恭喜你的牙齿又变白了";
+    $("#stepHint").textContent = "";
+  } else if (idle) {
+    $("#stepIndex").textContent = "第1步";
+    $("#stepTitle").textContent = "挤好牙膏";
+    $("#stepHint").textContent = "点击开始刷牙，给牙齿搓个澡";
+  } else {
+    $("#stepIndex").textContent = `第 ${info.stepIndex + 1} / ${orderedSteps.length} 步`;
+    $("#stepTitle").textContent = `${step.title} ${Math.round(getStepDuration(step))}s`;
+    $("#stepHint").textContent = step.hint;
+  }
   const ring = $(".timer-ring");
   $(".timer-value").setAttribute("d", getProgressArcPath(progress));
   ring.classList.toggle("no-progress", progress <= 0.1 && !timer.running);
